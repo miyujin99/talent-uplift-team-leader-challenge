@@ -172,7 +172,7 @@
         <div class="flex gap-3 items-start">
           <div class="w-10 h-10 rounded-xl bg-[#fff1e7] text-[#d97531] flex items-center justify-center shrink-0 font-bold">★</div>
           <p class="text-[#526478] leading-relaxed">
-            Participants have <strong>30 seconds per topic</strong>. Enter keywords separated by commas.
+            Participants have <strong>45 seconds per topic</strong>. Enter keywords separated by commas.
             English, Vietnamese, or mixed language are accepted. Responses, timer, word cloud, and ranking sync in realtime across devices.
           </p>
         </div>
@@ -229,7 +229,7 @@
                 <label class="block text-sm font-semibold text-[#31475c] mb-2" for="keywords">Keywords</label>
                 <textarea id="keywords" rows="4" class="w-full rounded-2xl border border-[#dce5ec] px-4 py-3 text-sm focus:outline-none focus:border-[#e7833f] resize-none disabled:bg-[#f2f4f6] disabled:text-[#8b9aaa]" required></textarea>
                 <p class="text-xs text-[#7c8d9c] mt-2 leading-relaxed">
-                  Enter keywords separated by commas. Example: productivity, đào tạo, data, rủi ro, customer value.
+                  Enter keywords separated by commas. Press Enter to submit immediately. Example: productivity, đào tạo, data, rủi ro, customer value.
                 </p>
                 <p id="submitError" class="hidden text-sm text-[#b4412b] font-semibold mt-3"></p>
               </div>
@@ -249,11 +249,11 @@
             <div class="flex items-start justify-between gap-4">
               <div>
                 <p class="text-[11px] tracking-[0.22em] uppercase text-[#f3b183] font-bold mb-1">Challenge Clock</p>
-                <h2 class="text-white font-bold text-2xl">30-Second Timer</h2>
+                <h2 class="text-white font-bold text-2xl">45-Second Timer</h2>
               </div>
               <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">⏱</div>
             </div>
-            <div id="timerDisplay" class="display text-7xl md:text-8xl leading-none mt-5 tracking-tight text-white">30</div>
+            <div id="timerDisplay" class="display text-7xl md:text-8xl leading-none mt-5 tracking-tight text-white">45</div>
             <div id="timerStatus" class="text-[#bfd0df] mt-3 min-h-[22px]">Waiting for facilitator to start.</div>
           </section>
 
@@ -497,7 +497,7 @@
   </div>
 
   <div id="cloudFullscreenModal" class="fullscreen-modal hidden">
-    <div class="flex items-center justify-between gap-4 mb-4 text-white">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4 text-white">
       <div>
         <div class="text-[12px] tracking-[0.22em] uppercase text-[#f3b183] font-bold mb-1">
           Live Word Cloud
@@ -507,11 +507,19 @@
         </h2>
       </div>
 
-      <button id="closeCloudFullscreen"
-        class="rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 px-4 py-3 text-sm font-semibold"
-        type="button">
-        Close
-      </button>
+      <div class="flex items-center gap-3">
+        <div class="rounded-2xl bg-white/10 border border-white/20 px-5 py-3 min-w-[140px] text-center">
+          <div class="text-[11px] tracking-[0.18em] uppercase text-[#f3b183] font-bold mb-1">Timer</div>
+          <div id="fullscreenTimerDisplay" class="display text-4xl md:text-5xl font-bold leading-none">45</div>
+          <div id="fullscreenTimerStatus" class="text-xs text-[#bfd0df] mt-1">Waiting to start</div>
+        </div>
+
+        <button id="closeCloudFullscreen"
+          class="rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 px-4 py-3 text-sm font-semibold"
+          type="button">
+          Close
+        </button>
+      </div>
     </div>
 
     <div class="fullscreen-cloud-box">
@@ -545,11 +553,11 @@ const controlRef = ref(db, `sessions/${SESSION_ID}/control`);
 const submissionsRef = ref(db, `sessions/${SESSION_ID}/submissions`);
 const serverOffsetRef = ref(db, ".info/serverTimeOffset");
 
-const TIMER_DURATION = 30;
+const TIMER_DURATION = 45;
 const WORKER_ANALYZE_URL = "https://talent-uplift-ai-analysis.miyujin99.workers.dev/";
 
-const AI_FETCH_TIMEOUT_MS = 90000;
-const AI_MAX_RETRIES = 3;
+const AI_FETCH_TIMEOUT_MS = 60000;
+const AI_MAX_RETRIES = 2;
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -780,24 +788,37 @@ function setParticipantEntryEnabled(enabled) {
 
 function renderTimer() {
   const remaining = calculateRemainingTime();
-  q("#timerDisplay").textContent = String(remaining).padStart(2, "0");
+  const remainingText = String(remaining).padStart(2, "0");
+
+  q("#timerDisplay").textContent = remainingText;
   q("#timerDisplay").classList.toggle("timer-ended", remaining === 0);
 
+  const fullscreenTimer = q("#fullscreenTimerDisplay");
+  const fullscreenStatus = q("#fullscreenTimerStatus");
+  if (fullscreenTimer) {
+    fullscreenTimer.textContent = remainingText;
+    fullscreenTimer.classList.toggle("timer-ended", remaining === 0);
+  }
+
   if (control.timerStatus === "ready") {
-    q("#timerStatus").textContent = "Waiting for facilitator to start.";
+    q("#timerStatus").textContent = `Ready · ${TIMER_DURATION}s`;
     q("#timerStatus").classList.remove("timer-ended");
     q("#facilitatorStatusText").textContent = "Ready";
+    if (fullscreenStatus) fullscreenStatus.textContent = `Ready · ${TIMER_DURATION}s`;
     setParticipantEntryEnabled(false);
   } else if (control.timerStatus === "running" && remaining > 0) {
-    q("#timerStatus").textContent = "30 seconds to think, respond, and lead.";
+    q("#timerStatus").textContent = `Time remaining: ${remaining}s / Còn ${remaining}s`;
     q("#timerStatus").classList.remove("timer-ended");
-    q("#facilitatorStatusText").textContent = "Timer running";
+    q("#facilitatorStatusText").textContent = `${remaining}s remaining`;
+    if (fullscreenStatus) fullscreenStatus.textContent = `${remaining}s remaining`;
     setParticipantEntryEnabled(true);
   } else {
     q("#timerDisplay").textContent = "00";
+    if (fullscreenTimer) fullscreenTimer.textContent = "00";
     q("#timerStatus").textContent = "Time’s up. Please stop typing. / Hết giờ. Vui lòng dừng nhập.";
     q("#timerStatus").classList.add("timer-ended");
     q("#facilitatorStatusText").textContent = "Time’s up";
+    if (fullscreenStatus) fullscreenStatus.textContent = "Time’s up";
     setParticipantEntryEnabled(false);
     stopTimerRefresh();
   }
@@ -1242,16 +1263,76 @@ function downloadSummary() {
   downloadFile("talent-uplift-keyword-scored-summary.csv", toCSV(rows));
 }
 
-function getFullResponseRowsForAi() {
-  return submissions.map(r => ({
-    fullName: r.fullName,
-    department: r.department,
-    topic: r.topicTitle,
-    rawResponse: r.rawResponse,
-    cleanedKeywords: r.cleanedKeywords,
-    keywordCount: r.keywordCount,
-    submittedAt: r.submittedAt
-  }));
+function getRepresentativeKeywordsForCandidate(fullName, department, limit = 6) {
+  const freq = new Map();
+
+  submissions
+    .filter(r =>
+      normalizeText(r.fullName) === normalizeText(fullName) &&
+      normalizeText(r.department) === normalizeText(department)
+    )
+    .forEach(r => {
+      (r.cleanedKeywords || []).forEach(keyword => {
+        const key = normalizeText(keyword);
+        if (!key) return;
+
+        const matched = Boolean(matchKeyword(keyword));
+        const current = freq.get(key) || { text: keyword, count: 0, matched };
+        current.count += 1;
+        current.matched = current.matched || matched;
+        freq.set(key, current);
+      });
+    });
+
+  return Array.from(freq.values())
+    .sort((a, b) => {
+      if (Number(b.matched) !== Number(a.matched)) return Number(b.matched) - Number(a.matched);
+      if (b.count !== a.count) return b.count - a.count;
+      return a.text.localeCompare(b.text);
+    })
+    .slice(0, limit)
+    .map(item => item.text);
+}
+
+function getCompactResponseRowsForAi() {
+  const scoreMap = new Map(
+    getScoredSummary().map(s => [`${normalizeText(s.fullName)}|||${normalizeText(s.department)}`, s])
+  );
+
+  const participantMap = new Map();
+
+  submissions.forEach(r => {
+    const key = `${normalizeText(r.fullName)}|||${normalizeText(r.department)}`;
+
+    if (!participantMap.has(key)) {
+      const score = scoreMap.get(key) || {};
+      participantMap.set(key, {
+        fullName: r.fullName,
+        department: r.department,
+        validKeywordCount: Number(score.validCount || 0),
+        matchedKeywordCount: Number(score.matchedCount || 0),
+        businessScore: Number(score.businessScore || 0),
+        breadthScore: Number(score.breadthScore || 0),
+        leadershipScore: Number(score.leadershipScore || 0),
+        rankingScore: Number(score.totalScore || 0),
+        signals: score.signals || [],
+        topics: []
+      });
+    }
+
+    const participant = participantMap.get(key);
+    participant.topics.push({
+      topic: r.topicTitle,
+      keywords: (r.cleanedKeywords || []).slice(0, 18)
+    });
+  });
+
+  return Array.from(participantMap.values())
+    .sort((a, b) => Number(b.rankingScore || 0) - Number(a.rankingScore || 0))
+    .map(item => ({
+      ...item,
+      representativeKeywords: getRepresentativeKeywordsForCandidate(item.fullName, item.department, 6)
+    }));
 }
 
 function renderGptAnalysisResult(result) {
@@ -1273,6 +1354,20 @@ function renderGptAnalysisResult(result) {
     candidates.forEach(candidate => {
       const card = document.createElement("div");
       card.className = "rounded-2xl border border-[#e6ecf1] bg-[#fbfcfd] p-4";
+
+      const representativeKeywords =
+        Array.isArray(candidate.representativeKeywords) && candidate.representativeKeywords.length
+          ? candidate.representativeKeywords
+          : getRepresentativeKeywordsForCandidate(candidate.fullName || "", candidate.department || "", 6);
+
+      const keywordHtml = representativeKeywords.length
+        ? `<div class="mt-3 flex flex-wrap gap-2">${
+            representativeKeywords
+              .map(keyword => `<span class="rounded-full bg-[#eef3f7] text-[#17324f] px-3 py-1 text-xs font-semibold">${escapeHtml(keyword)}</span>`)
+              .join("")
+          }</div>`
+        : "";
+
       card.innerHTML = `
         <div class="flex items-start justify-between gap-3 mb-2">
           <div>
@@ -1282,17 +1377,8 @@ function renderGptAnalysisResult(result) {
           </div>
           <div class="rounded-full bg-[#fff1e7] text-[#b65f27] px-3 py-1 text-xs font-bold whitespace-nowrap">Ranked for review</div>
         </div>
-        <p class="text-sm text-[#526478] leading-relaxed mb-3">${escapeHtml(softenAiText(candidate.rationale || ""))}</p>
-        <div class="grid sm:grid-cols-2 gap-3 text-sm">
-          <div>
-            <div class="font-bold text-[#17324f] mb-1">Observed Strength Signals</div>
-            <ul class="list-disc pl-5 text-[#526478]">${softList(candidate.strengthSignals).map(x => `<li>${escapeHtml(x)}</li>`).join("") || "<li>-</li>"}</ul>
-          </div>
-          <div>
-            <div class="font-bold text-[#17324f] mb-1">Additional Review Points</div>
-            <ul class="list-disc pl-5 text-[#526478]">${softList(candidate.watchouts).map(x => `<li>${escapeHtml(x)}</li>`).join("") || "<li>No major review points returned.</li>"}</ul>
-          </div>
-        </div>
+        <p class="text-sm text-[#526478] leading-relaxed">${escapeHtml(softenAiText(candidate.rationale || ""))}</p>
+        ${keywordHtml}
       `;
       candidatesWrap.appendChild(card);
     });
@@ -1337,26 +1423,39 @@ async function runGptAnalysis() {
   }
 
   const payload = JSON.stringify({
-    submissions: getFullResponseRowsForAi(),
-    scoredSummary: getScoredSummary(),
+    submissions: getCompactResponseRowsForAi(),
+    scoredSummary: getScoredSummary().map(s => ({
+      rank: s.rank,
+      fullName: s.fullName,
+      department: s.department,
+      validKeywordCount: s.validCount,
+      matchedKeywordCount: s.matchedCount,
+      matchRatio: s.validCount ? `${s.matchedCount}/${s.validCount}` : "0/0",
+      breadthScore: s.breadthScore,
+      businessScore: s.businessScore,
+      leadershipScore: s.leadershipScore,
+      rankingScore: s.totalScore,
+      keySignals: s.signals,
+      representativeKeywords: getRepresentativeKeywordsForCandidate(s.fullName, s.department, 6)
+    })),
     analysisGuidelines: {
-      rankingMode: "Rank participants from highest to lowest only. Do not classify as Strong/Potential/Not Prioritized.",
-      criteriaFocus: ["keyword match", "topic relevance", "business understanding", "thinking breadth", "leadership-related signals"],
-      tone: "Use supportive, neutral, facilitator-friendly language. Avoid harsh labels such as lacked depth, low business sense, not prioritized, weak, failed, or did not demonstrate leadership potential.",
-      wordingPreference: "Use phrases like 'would benefit from', 'could show more', 'shows early signals of', 'needs facilitator observation', and 'based on current keyword data'."
+      rankingMode: "Rank participants from highest to lowest only.",
+      criteriaFocus: ["keyword match", "topic relevance", "business understanding"],
+      tone: "Short, supportive, neutral. Each participant comment must be only 1-2 sentences.",
+      outputPreference: "No watchouts section and no strength-signal bullet section. Include only representative keywords."
     }
   });
 
   button.disabled = true;
   button.textContent = "Analyzing...";
-  status.innerHTML = `<span class="text-[#17324f] font-semibold">Analyzing participant responses through the AI Worker...</span>`;
+  status.innerHTML = `<span class="text-[#17324f] font-semibold">Generating concise AI ranking...</span>`;
 
   let lastError = null;
 
   try {
     for (let attempt = 1; attempt <= AI_MAX_RETRIES; attempt++) {
       try {
-        status.innerHTML = `<span class="text-[#17324f] font-semibold">Analyzing participant responses through the AI Worker... Attempt ${attempt}/${AI_MAX_RETRIES}</span>`;
+        status.innerHTML = `<span class="text-[#17324f] font-semibold">Generating concise AI ranking... Attempt ${attempt}/${AI_MAX_RETRIES}</span>`;
 
         const response = await fetchWithTimeout(WORKER_ANALYZE_URL, {
           method: "POST",
@@ -1418,7 +1517,7 @@ function buildAiPackage() {
   return `You are analyzing a Keyword Challenge activity for Talent Uplift Bootcamp 2026.
 
 Context:
-This activity is used to identify potential Team Leader Candidates for a Business Case Challenge. Participants had 30 seconds per topic to enter as many relevant keywords as possible. They were allowed to answer in English, Vietnamese, or mixed language.
+This activity is used to identify potential Team Leader Candidates for a Business Case Challenge. Participants had 45 seconds per topic to enter as many relevant keywords as possible. They were allowed to answer in English, Vietnamese, or mixed language.
 
 The web app has already created a rule-based keyword scoring summary using a master keyword list. Please review the quality of the keyword responses and provide a final facilitator recommendation.
 
@@ -1531,6 +1630,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   q("#startTimer").addEventListener("click", startTimer);
   q("#resetTimer").addEventListener("click", resetTimer);
   q("#nextTopic").addEventListener("click", nextTopic);
+
+  q("#keywords").addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" || event.shiftKey || event.isComposing) return;
+    event.preventDefault();
+
+    if (!q("#submitButton").disabled) {
+      q("#keywordForm").requestSubmit();
+    }
+  });
 
   q("#keywordForm").addEventListener("submit", async (event) => {
     event.preventDefault();
