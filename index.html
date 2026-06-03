@@ -52,12 +52,65 @@
 
     .cloud-word {
       position: absolute;
-      transform: translate(-50%, -50%);
+      transform: none;
       line-height: 1;
       white-space: nowrap;
       font-weight: 800;
       transition: all .25s ease;
       animation: fadeIn .35s ease both;
+      display: inline-block;
+      max-width: 46%;
+      padding: 3px 7px;
+      border-radius: 999px;
+      text-align: center;
+      user-select: none;
+    }
+
+    .cloud-area-flex {
+      position: relative;
+      display: block;
+      padding: 22px;
+      overflow: hidden;
+    }
+
+    .fullscreen-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(14, 34, 56, 0.92);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      padding: 22px;
+    }
+
+    .fullscreen-modal.hidden {
+      display: none;
+    }
+
+    .fullscreen-cloud-box {
+      flex: 1;
+      background: #f7f9fb;
+      border-radius: 28px;
+      border: 1px solid #e8edf2;
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, .28);
+    }
+
+    .fullscreen-cloud-area {
+      position: relative;
+      min-height: calc(100vh - 180px);
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      padding: 40px;
+    }
+
+    .fullscreen-cloud-area .cloud-word {
+      max-width: 38%;
+    }
+
+    body.cloud-modal-open {
+      overflow: hidden;
     }
 
     .fade-in { animation: fadeIn .35s ease both; }
@@ -211,10 +264,15 @@
                 <h2 class="text-[#0e2238] font-bold text-2xl">Word Cloud</h2>
                 <p class="text-[#7a8c9b] mt-1">Shows submitted keywords for the current topic.</p>
               </div>
-              <div class="w-10 h-10 rounded-xl bg-[#eef3f7] text-[#17324f] flex items-center justify-center font-bold">☁</div>
+              <div class="flex items-center gap-2">
+                <button id="openCloudFullscreen" class="rounded-xl bg-[#17324f] text-white px-3 py-2 text-xs font-semibold hover:bg-[#10253c] transition" type="button">
+                  Full Screen
+                </button>
+                <div class="w-10 h-10 rounded-xl bg-[#eef3f7] text-[#17324f] flex items-center justify-center font-bold">☁</div>
+              </div>
             </div>
-            <div id="cloudArea" class="relative rounded-2xl bg-[#f7f9fb] border border-[#e8edf2] h-[380px] overflow-hidden">
-              <div id="cloudEmpty" class="absolute inset-0 flex items-center justify-center text-center px-8 text-[#90a0ae]">
+            <div id="cloudArea" class="cloud-area-flex relative rounded-2xl bg-[#f7f9fb] border border-[#e8edf2] h-[380px] overflow-hidden">
+              <div id="cloudEmpty" class="flex items-center justify-center text-center px-8 text-[#90a0ae]">
                 No keywords submitted yet for this topic.
               </div>
             </div>
@@ -295,18 +353,18 @@
                 <button id="downloadResponses" class="rounded-xl bg-[#17324f] text-white px-3 py-2 text-sm font-semibold" type="button">Download Full Responses</button>
                 <button id="downloadSummary" class="rounded-xl bg-[#edf2f6] text-[#17324f] px-3 py-2 text-sm font-semibold" type="button">Download Scored Summary</button>
                 <button id="copyAiPackage" class="rounded-xl bg-[#fff1e7] text-[#b65f27] px-3 py-2 text-sm font-semibold" type="button">Copy AI Analysis Package</button>
-                <button id="runGptAnalysis" class="rounded-xl bg-[#e7833f] text-white px-3 py-2 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed" type="button">Run GPT Analysis</button>
+                <button id="runGptAnalysis" class="rounded-xl bg-[#e7833f] text-white px-3 py-2 text-sm font-semibold hover:bg-[#d97531] transition disabled:opacity-60 disabled:cursor-not-allowed" type="button">Run GPT Analysis</button>
               </div>
             </div>
 
             <p id="copyStatus" class="hidden text-sm text-[#16845b] mb-4"></p>
 
-            <section id="gptAnalysisPanel" class="hidden rounded-3xl border border-[#e6ecf1] bg-[#fbfcfd] p-5 mb-6">
-              <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+            <section id="gptAnalysisPanel" class="rounded-3xl border border-[#e6ecf1] bg-[#fbfcfd] p-5 mb-6">
+              <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4">
                 <div>
                   <p class="text-[11px] tracking-[0.22em] uppercase text-[#e7833f] font-bold mb-1">GPT-Supported Analysis</p>
                   <h3 class="text-[#0e2238] font-bold text-2xl">Team Leader Candidate Recommendation</h3>
-                  <p id="gptAnalysisStatus" class="text-sm text-[#718495] mt-2">Ready to analyze current submissions.</p>
+                  <p id="gptStatus" class="text-sm text-[#6b7f91] mt-2">Submit participant responses, then click <strong>Run GPT Analysis</strong>.</p>
                 </div>
                 <div class="rounded-2xl bg-white border border-[#e6ecf1] px-4 py-3 min-w-[180px]">
                   <div class="text-[11px] uppercase tracking-[0.16em] text-[#d97531] font-bold mb-1">AI Role</div>
@@ -314,32 +372,32 @@
                 </div>
               </div>
 
-              <div id="gptAnalysisContent" class="hidden space-y-5">
+              <div id="gptResult" class="hidden space-y-5">
                 <div class="rounded-2xl bg-white border border-[#e6ecf1] p-4">
                   <h4 class="font-bold text-[#17324f] mb-2">Executive Summary</h4>
                   <p id="gptExecutiveSummary" class="text-sm text-[#526478] leading-relaxed"></p>
                 </div>
 
-                <div>
+                <div class="rounded-2xl bg-white border border-[#e6ecf1] p-4">
                   <h4 class="font-bold text-[#17324f] mb-3">Recommended Candidates</h4>
-                  <div id="gptRecommendedCandidates" class="grid md:grid-cols-2 gap-3"></div>
+                  <div id="gptCandidates" class="grid md:grid-cols-2 gap-3"></div>
                 </div>
 
-                <div>
+                <div class="rounded-2xl bg-white border border-[#e6ecf1] p-4">
                   <h4 class="font-bold text-[#17324f] mb-3">GPT Score Table</h4>
                   <div class="scroll-table rounded-2xl border border-[#e6ecf1]">
-                    <table class="min-w-[1100px] w-full text-sm">
+                    <table class="min-w-[980px] w-full text-sm">
                       <thead class="bg-[#f5f7f9] text-[#536678]">
                         <tr>
                           <th class="text-left px-3 py-3 font-semibold">Name</th>
-                          <th class="text-left px-3 py-3 font-semibold">Department</th>
+                          <th class="text-left px-3 py-3 font-semibold">Dept</th>
                           <th class="text-left px-3 py-3 font-semibold">Quantity</th>
                           <th class="text-left px-3 py-3 font-semibold">Relevance</th>
                           <th class="text-left px-3 py-3 font-semibold">Breadth</th>
                           <th class="text-left px-3 py-3 font-semibold">Business</th>
                           <th class="text-left px-3 py-3 font-semibold">Leadership</th>
                           <th class="text-left px-3 py-3 font-semibold">Total</th>
-                          <th class="text-left px-3 py-3 font-semibold">Final Level</th>
+                          <th class="text-left px-3 py-3 font-semibold">Level</th>
                         </tr>
                       </thead>
                       <tbody id="gptScoreBody" class="divide-y divide-[#edf1f4]"></tbody>
@@ -347,14 +405,15 @@
                   </div>
                 </div>
 
-                <div class="rounded-2xl bg-white border border-[#e6ecf1] p-4">
-                  <h4 class="font-bold text-[#17324f] mb-2">Caution Notes</h4>
-                  <ul id="gptCautionNotes" class="list-disc pl-5 text-sm text-[#526478] space-y-1"></ul>
-                </div>
-
-                <div class="rounded-2xl bg-[#fff8f3] border border-[#f4d8c6] p-4">
-                  <h4 class="font-bold text-[#b65f27] mb-2">Facilitator Decision Guide</h4>
-                  <p id="gptDecisionGuide" class="text-sm text-[#6b4b36] leading-relaxed"></p>
+                <div class="grid lg:grid-cols-2 gap-4">
+                  <div class="rounded-2xl bg-white border border-[#e6ecf1] p-4">
+                    <h4 class="font-bold text-[#17324f] mb-2">Caution Notes</h4>
+                    <ul id="gptCautionNotes" class="list-disc pl-5 text-sm text-[#526478] space-y-1"></ul>
+                  </div>
+                  <div class="rounded-2xl bg-white border border-[#e6ecf1] p-4">
+                    <h4 class="font-bold text-[#17324f] mb-2">Facilitator Decision Guide</h4>
+                    <p id="gptDecisionGuide" class="text-sm text-[#526478] leading-relaxed"></p>
+                  </div>
                 </div>
               </div>
             </section>
@@ -438,9 +497,36 @@
     </main>
   </div>
 
+  <div id="cloudFullscreenModal" class="fullscreen-modal hidden">
+    <div class="flex items-center justify-between gap-4 mb-4 text-white">
+      <div>
+        <div class="text-[12px] tracking-[0.22em] uppercase text-[#f3b183] font-bold mb-1">
+          Live Word Cloud
+        </div>
+        <h2 id="fullscreenTopicTitle" class="text-3xl md:text-5xl font-bold leading-tight">
+          Current Topic
+        </h2>
+      </div>
+
+      <button id="closeCloudFullscreen"
+        class="rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 px-4 py-3 text-sm font-semibold"
+        type="button">
+        Close
+      </button>
+    </div>
+
+    <div class="fullscreen-cloud-box">
+      <div id="fullscreenCloudArea" class="fullscreen-cloud-area">
+        <div id="fullscreenCloudEmpty" class="text-[#90a0ae] text-center text-xl">
+          No keywords submitted yet for this topic.
+        </div>
+      </div>
+    </div>
+  </div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-import { getDatabase, ref, onValue, push, set, update, remove } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
+import { getDatabase, ref, onValue, push, set, update, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAGtdqky4nCXz7olE11zWNMuDGfB5C2xpo",
@@ -458,9 +544,10 @@ const db = getDatabase(app);
 const SESSION_ID = "talent-uplift-bootcamp-2026-live";
 const controlRef = ref(db, `sessions/${SESSION_ID}/control`);
 const submissionsRef = ref(db, `sessions/${SESSION_ID}/submissions`);
+const serverOffsetRef = ref(db, ".info/serverTimeOffset");
 
 const TIMER_DURATION = 30;
-const WORKER_ANALYZE_URL = "https://talent-uplift-ai-analysis.miyujin99.workers.dev";
+const WORKER_ANALYZE_URL = "https://talent-uplift-ai-analysis.miyujin99.workers.dev/";
 
 const topics = [
   {
@@ -560,10 +647,12 @@ const qa = (sel) => Array.from(document.querySelectorAll(sel));
 let control = {
   currentTopic: 0,
   timerStatus: "ready",
-  timerStartedAt: ""
+  timerStartedAt: "",
+  timerStartedAtMs: 0
 };
 let submissions = [];
 let timerRefreshInterval = null;
+let serverTimeOffset = 0;
 
 function kw(normalized, synonyms, categories, weight) {
   return { normalized, synonyms, categories, weight };
@@ -614,15 +703,32 @@ function setTopicUI(index) {
   q("#facilitatorActiveTopic").textContent = `${topics[index].label} · ${topics[index].title}`;
 }
 
+function getSyncedNowMs() {
+  return Date.now() + Number(serverTimeOffset || 0);
+}
+
+function getTimerStartMs() {
+  const fromServer = Number(control.timerStartedAtMs || 0);
+  if (fromServer > 0) return fromServer;
+
+  // Legacy fallback for old control records created before this fix.
+  const parsed = Date.parse(control.timerStartedAt || "");
+  if (!parsed || Number.isNaN(parsed)) return 0;
+  return parsed;
+}
+
 function calculateRemainingTime() {
   if (control.timerStatus === "ready") return TIMER_DURATION;
   if (control.timerStatus === "ended") return 0;
+
   if (control.timerStatus === "running") {
-    const start = Date.parse(control.timerStartedAt || "");
-    if (!start || Number.isNaN(start)) return TIMER_DURATION;
-    const elapsed = Math.floor((Date.now() - start) / 1000);
-    return Math.max(0, TIMER_DURATION - elapsed);
+    const startMs = getTimerStartMs();
+    if (!startMs) return TIMER_DURATION;
+
+    const elapsed = Math.floor((getSyncedNowMs() - startMs) / 1000);
+    return Math.max(0, TIMER_DURATION - Math.max(0, elapsed));
   }
+
   return TIMER_DURATION;
 }
 
@@ -683,6 +789,8 @@ async function setTopic(index) {
     currentTopic: index,
     timerStatus: "ready",
     timerStartedAt: "",
+    timerStartedAtMs: 0,
+    timerDuration: TIMER_DURATION,
     updatedAt: new Date().toISOString()
   });
   q("#keywords").value = "";
@@ -691,7 +799,10 @@ async function setTopic(index) {
 async function startTimer() {
   await update(controlRef, {
     timerStatus: "running",
+    // Human-readable backup only; not used as the official timer source.
     timerStartedAt: new Date().toISOString(),
+    // Official source of truth. Firebase resolves this using server time.
+    timerStartedAtMs: serverTimestamp(),
     timerDuration: TIMER_DURATION,
     updatedAt: new Date().toISOString()
   });
@@ -701,6 +812,7 @@ async function resetTimer() {
   await update(controlRef, {
     timerStatus: "ready",
     timerStartedAt: "",
+    timerStartedAtMs: 0,
     timerDuration: TIMER_DURATION,
     updatedAt: new Date().toISOString()
   });
@@ -711,11 +823,7 @@ async function nextTopic() {
   await setTopic(next);
 }
 
-function renderCloud() {
-  const cloud = q("#cloudArea");
-  qa(".cloud-word").forEach(el => el.remove());
-  const empty = q("#cloudEmpty");
-
+function getCurrentTopicWordFrequency() {
   const topicRecords = submissions.filter(r => Number(r.topicId) === Number(control.currentTopic) + 1);
   const freq = {};
 
@@ -727,37 +835,158 @@ function renderCloud() {
     });
   });
 
-  const words = Object.values(freq).sort((a, b) => b.count - a.count).slice(0, 32);
+  return Object.values(freq).sort((a, b) => b.count - a.count);
+}
+
+function boxesOverlap(a, b, padding = 6) {
+  return !(
+    a.right + padding < b.left ||
+    a.left - padding > b.right ||
+    a.bottom + padding < b.top ||
+    a.top - padding > b.bottom
+  );
+}
+
+function findCloudPosition(wordWidth, wordHeight, placed, areaWidth, areaHeight, index) {
+  const centerX = areaWidth / 2;
+  const centerY = areaHeight / 2;
+  const maxRadiusX = Math.max(20, areaWidth * 0.46);
+  const maxRadiusY = Math.max(20, areaHeight * 0.42);
+
+  // Spiral placement: largest words go near the center, smaller words radiate out.
+  for (let attempt = 0; attempt < 520; attempt++) {
+    const progress = attempt / 520;
+    const angle = attempt * 0.55 + index * 1.37;
+    const radiusX = 8 + progress * maxRadiusX;
+    const radiusY = 6 + progress * maxRadiusY;
+
+    const jitterX = Math.sin((attempt + index) * 2.13) * 6;
+    const jitterY = Math.cos((attempt + index) * 1.71) * 5;
+
+    const x = centerX + Math.cos(angle) * radiusX + jitterX - wordWidth / 2;
+    const y = centerY + Math.sin(angle) * radiusY + jitterY - wordHeight / 2;
+
+    const box = {
+      left: x,
+      top: y,
+      right: x + wordWidth,
+      bottom: y + wordHeight
+    };
+
+    const inside =
+      box.left >= 8 &&
+      box.top >= 8 &&
+      box.right <= areaWidth - 8 &&
+      box.bottom <= areaHeight - 8;
+
+    if (!inside) continue;
+
+    const collides = placed.some(existing => boxesOverlap(box, existing, 7));
+    if (!collides) return { x, y, box };
+  }
+
+  // Fallback: scan a loose grid if spiral cannot place a long word.
+  const stepX = Math.max(18, Math.floor(wordWidth * 0.42));
+  const stepY = Math.max(16, Math.floor(wordHeight * 0.95));
+  for (let y = 10; y <= areaHeight - wordHeight - 10; y += stepY) {
+    for (let x = 10; x <= areaWidth - wordWidth - 10; x += stepX) {
+      const box = { left: x, top: y, right: x + wordWidth, bottom: y + wordHeight };
+      const collides = placed.some(existing => boxesOverlap(box, existing, 5));
+      if (!collides) return { x, y, box };
+    }
+  }
+
+  return null;
+}
+
+function renderCloudArea(areaSelector, emptySelector, options = {}) {
+  const area = q(areaSelector);
+  const empty = q(emptySelector);
+
+  if (!area) return;
+
+  Array.from(area.querySelectorAll(".cloud-word")).forEach(el => el.remove());
+
+  const words = getCurrentTopicWordFrequency().slice(0, options.maxWords || 60);
 
   if (!words.length) {
-    empty.classList.remove("hidden");
+    if (empty) empty.classList.remove("hidden");
     return;
   }
 
-  empty.classList.add("hidden");
+  if (empty) empty.classList.add("hidden");
 
-  const spots = [
-    [50,48],[30,35],[68,33],[38,62],[66,65],[18,50],[82,51],[50,22],
-    [51,76],[22,23],[79,24],[18,75],[83,76],[35,18],[66,18],[34,82],
-    [67,84],[11,38],[89,38],[12,63],[88,63],[50,10],[50,90],[25,88],
-    [76,88],[25,12],[77,12],[12,88],[88,12],[41,44],[58,57],[45,70]
-  ];
-
+  const areaWidth = area.clientWidth || 420;
+  const areaHeight = area.clientHeight || 380;
   const max = words[0].count;
-  const colors = ["#17324f","#244c71","#e7833f","#40617d","#6c879d","#0e2238"];
+  const colors = ["#17324f", "#244c71", "#e7833f", "#40617d", "#6c879d", "#0e2238", "#b65f27"];
+  const placed = [];
 
   words.forEach((word, i) => {
     const el = document.createElement("span");
     el.className = "cloud-word";
-    const size = 15 + Math.round((word.count / max) * 26);
-    el.style.left = `${spots[i][0]}%`;
-    el.style.top = `${spots[i][1]}%`;
+
+    const minSize = options.minSize || 14;
+    const maxSize = options.maxSize || 38;
+    const size = minSize + Math.round((word.count / max) * (maxSize - minSize));
+
     el.style.fontSize = `${size}px`;
     el.style.color = colors[i % colors.length];
-    el.style.animationDelay = `${i * .02}s`;
+    el.style.animationDelay = `${i * 0.012}s`;
+    el.style.left = "0px";
+    el.style.top = "0px";
+    el.style.visibility = "hidden";
+
+    if (word.count > 1) el.title = `${word.text} (${word.count})`;
     el.textContent = word.text;
-    cloud.appendChild(el);
+    area.appendChild(el);
+
+    let w = Math.ceil(el.offsetWidth);
+    let h = Math.ceil(el.offsetHeight);
+
+    // Keep very long words from breaking the cloud layout.
+    const maxAllowedWidth = Math.floor(areaWidth * (options.wordWidthRatio || 0.42));
+    if (w > maxAllowedWidth) {
+      el.style.whiteSpace = "normal";
+      el.style.maxWidth = `${maxAllowedWidth}px`;
+      w = Math.ceil(el.offsetWidth);
+      h = Math.ceil(el.offsetHeight);
+    }
+
+    const position = findCloudPosition(w, h, placed, areaWidth, areaHeight, i);
+
+    if (position) {
+      el.style.left = `${position.x}px`;
+      el.style.top = `${position.y}px`;
+      el.style.visibility = "visible";
+      placed.push(position.box);
+    } else {
+      // If there is truly no space, hide low-frequency overflow words instead of overlapping.
+      el.remove();
+    }
   });
+}
+
+function renderCloud() {
+  renderCloudArea("#cloudArea", "#cloudEmpty", {
+    maxWords: 32,
+    minSize: 14,
+    maxSize: 38,
+    wordWidthRatio: 0.38
+  });
+
+  const modal = q("#cloudFullscreenModal");
+  if (modal && !modal.classList.contains("hidden")) {
+    renderCloudArea("#fullscreenCloudArea", "#fullscreenCloudEmpty", {
+      maxWords: 95,
+      minSize: 20,
+      maxSize: 76,
+      wordWidthRatio: 0.34
+    });
+
+    q("#fullscreenTopicTitle").textContent =
+      `${topics[Number(control.currentTopic)].label} — ${topics[Number(control.currentTopic)].title}`;
+  }
 }
 
 function scoreParticipant(records) {
@@ -954,134 +1183,130 @@ function downloadSummary() {
   downloadFile("talent-uplift-keyword-scored-summary.csv", toCSV(rows));
 }
 
+function getFullResponseRowsForAi() {
+  return submissions.map(r => ({
+    fullName: r.fullName,
+    department: r.department,
+    topic: r.topicTitle,
+    rawResponse: r.rawResponse,
+    cleanedKeywords: r.cleanedKeywords,
+    keywordCount: r.keywordCount,
+    submittedAt: r.submittedAt
+  }));
+}
+
+function renderGptAnalysisResult(result) {
+  q("#gptResult").classList.remove("hidden");
+
+  q("#gptExecutiveSummary").textContent =
+    result.executiveSummary || "No executive summary returned.";
+
+  const candidatesWrap = q("#gptCandidates");
+  candidatesWrap.innerHTML = "";
+
+  const candidates = Array.isArray(result.recommendedCandidates)
+    ? result.recommendedCandidates
+    : [];
+
+  if (!candidates.length) {
+    candidatesWrap.innerHTML = `<div class="text-sm text-[#7a8c9b]">No recommended candidates returned.</div>`;
+  } else {
+    candidates.forEach(candidate => {
+      const card = document.createElement("div");
+      card.className = "rounded-2xl border border-[#e6ecf1] bg-[#fbfcfd] p-4";
+      card.innerHTML = `
+        <div class="flex items-start justify-between gap-3 mb-2">
+          <div>
+            <div class="text-xs uppercase tracking-[0.16em] text-[#d97531] font-bold">Rank ${escapeHtml(candidate.rank || "-")}</div>
+            <div class="text-lg font-bold text-[#17324f]">${escapeHtml(candidate.fullName || "Unnamed")}</div>
+            <div class="text-sm text-[#6b7f91]">${escapeHtml(candidate.department || "")}</div>
+          </div>
+          <div class="rounded-full bg-[#fff1e7] text-[#b65f27] px-3 py-1 text-xs font-bold whitespace-nowrap">${escapeHtml(candidate.recommendation || "Review")}</div>
+        </div>
+        <p class="text-sm text-[#526478] leading-relaxed mb-3">${escapeHtml(candidate.rationale || "")}</p>
+        <div class="grid sm:grid-cols-2 gap-3 text-sm">
+          <div>
+            <div class="font-bold text-[#17324f] mb-1">Strength Signals</div>
+            <ul class="list-disc pl-5 text-[#526478]">${(candidate.strengthSignals || []).map(x => `<li>${escapeHtml(x)}</li>`).join("") || "<li>-</li>"}</ul>
+          </div>
+          <div>
+            <div class="font-bold text-[#17324f] mb-1">Watchouts</div>
+            <ul class="list-disc pl-5 text-[#526478]">${(candidate.watchouts || []).map(x => `<li>${escapeHtml(x)}</li>`).join("") || "<li>-</li>"}</ul>
+          </div>
+        </div>
+      `;
+      candidatesWrap.appendChild(card);
+    });
+  }
+
+  const scoreBody = q("#gptScoreBody");
+  scoreBody.innerHTML = "";
+  const scoreTable = Array.isArray(result.scoreTable) ? result.scoreTable : [];
+
+  scoreTable.forEach(row => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="px-3 py-3">${escapeHtml(row.fullName || "")}</td>
+      <td class="px-3 py-3">${escapeHtml(row.department || "")}</td>
+      <td class="px-3 py-3">${escapeHtml(row.validKeywordQuantity ?? "")}</td>
+      <td class="px-3 py-3">${escapeHtml(row.topicRelevance ?? "")}</td>
+      <td class="px-3 py-3">${escapeHtml(row.thinkingBreadth ?? "")}</td>
+      <td class="px-3 py-3">${escapeHtml(row.businessSense ?? "")}</td>
+      <td class="px-3 py-3">${escapeHtml(row.leadershipLens ?? "")}</td>
+      <td class="px-3 py-3 font-bold text-[#17324f]">${escapeHtml(row.totalScore ?? "")}</td>
+      <td class="px-3 py-3">${escapeHtml(row.finalLevel || "")}</td>
+    `;
+    scoreBody.appendChild(tr);
+  });
+
+  const cautions = Array.isArray(result.cautionNotes) ? result.cautionNotes : [];
+  q("#gptCautionNotes").innerHTML =
+    cautions.map(note => `<li>${escapeHtml(note)}</li>`).join("") || `<li>No caution notes returned.</li>`;
+
+  q("#gptDecisionGuide").textContent =
+    result.facilitatorDecisionGuide || "Please review GPT output together with facilitator observation and leader pitch.";
+}
 
 async function runGptAnalysis() {
   const button = q("#runGptAnalysis");
-  const panel = q("#gptAnalysisPanel");
-  const status = q("#gptAnalysisStatus");
-  const content = q("#gptAnalysisContent");
-
-  panel.classList.remove("hidden");
-  content.classList.add("hidden");
+  const status = q("#gptStatus");
 
   if (!submissions.length) {
-    status.textContent = "No submissions yet. Please collect participant responses first.";
-    status.className = "text-sm text-[#b4412b] mt-2 font-semibold";
+    status.innerHTML = `<span class="text-[#b4412b] font-semibold">No submissions yet. Please collect participant responses before running GPT analysis.</span>`;
     return;
   }
 
   button.disabled = true;
   button.textContent = "Analyzing...";
-  status.textContent = "GPT is analyzing participant keyword responses. Please wait...";
-  status.className = "text-sm text-[#718495] mt-2";
+  status.innerHTML = `<span class="text-[#17324f] font-semibold">Analyzing participant responses through the AI Worker...</span>`;
 
   try {
     const response = await fetch(WORKER_ANALYZE_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        submissions,
+        submissions: getFullResponseRowsForAi(),
         scoredSummary: getScoredSummary()
       })
     });
 
     const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data?.error ? `${data.error}: ${JSON.stringify(data.detail || "")}` : "GPT analysis failed.");
+    if (!response.ok || data.error) {
+      const message = data.error
+        ? `${data.error}${data.detail ? ": " + JSON.stringify(data.detail) : ""}`
+        : `HTTP ${response.status}`;
+      throw new Error(message);
     }
 
-    renderGptAnalysis(data);
-    status.textContent = "GPT analysis completed. Please review with facilitator judgment before finalizing Team Leader Candidates.";
-    status.className = "text-sm text-[#16845b] mt-2 font-semibold";
-    content.classList.remove("hidden");
+    renderGptAnalysisResult(data);
+    status.innerHTML = `<span class="text-[#16845b] font-semibold">GPT analysis completed. Please review as support input only.</span>`;
   } catch (error) {
-    status.textContent = `Could not run GPT analysis. ${String(error.message || error)}`;
-    status.className = "text-sm text-[#b4412b] mt-2 font-semibold";
+    status.innerHTML = `<span class="text-[#b4412b] font-semibold">Could not run GPT analysis. ${escapeHtml(String(error.message || error))}</span>`;
   } finally {
     button.disabled = false;
     button.textContent = "Run GPT Analysis";
   }
-}
-
-function renderGptAnalysis(data) {
-  q("#gptExecutiveSummary").textContent = data.executiveSummary || "No summary returned.";
-
-  const candidateBox = q("#gptRecommendedCandidates");
-  candidateBox.innerHTML = "";
-
-  const candidates = Array.isArray(data.recommendedCandidates) ? data.recommendedCandidates : [];
-  if (!candidates.length) {
-    candidateBox.innerHTML = `<div class="rounded-2xl bg-white border border-[#e6ecf1] p-4 text-sm text-[#718495]">No recommended candidates returned.</div>`;
-  } else {
-    candidates.forEach(candidate => {
-      const card = document.createElement("div");
-      card.className = "rounded-2xl bg-white border border-[#e6ecf1] p-4";
-      const strengths = Array.isArray(candidate.strengthSignals) ? candidate.strengthSignals : [];
-      const watchouts = Array.isArray(candidate.watchouts) ? candidate.watchouts : [];
-
-      card.innerHTML = `
-        <div class="flex items-start justify-between gap-3 mb-2">
-          <div>
-            <div class="text-[11px] uppercase tracking-[0.16em] text-[#d97531] font-bold">Rank ${escapeHtml(candidate.rank ?? "")}</div>
-            <h5 class="font-bold text-[#17324f] text-lg">${escapeHtml(candidate.fullName || "")}</h5>
-            <div class="text-sm text-[#718495]">${escapeHtml(candidate.department || "")}</div>
-          </div>
-          <div class="rounded-full bg-[#fff1e7] text-[#b65f27] px-3 py-1 text-xs font-bold">${escapeHtml(candidate.recommendation || "")}</div>
-        </div>
-        <p class="text-sm text-[#526478] leading-relaxed mb-3">${escapeHtml(candidate.rationale || "")}</p>
-        <div class="text-xs font-bold text-[#17324f] mb-1">Strength signals</div>
-        <div class="text-sm text-[#526478] mb-2">${escapeHtml(strengths.join(", ") || "N/A")}</div>
-        <div class="text-xs font-bold text-[#b4412b] mb-1">Watchouts</div>
-        <div class="text-sm text-[#526478]">${escapeHtml(watchouts.join(", ") || "N/A")}</div>
-      `;
-      candidateBox.appendChild(card);
-    });
-  }
-
-  const scoreBody = q("#gptScoreBody");
-  scoreBody.innerHTML = "";
-  const scoreRows = Array.isArray(data.scoreTable) ? data.scoreTable : [];
-
-  if (!scoreRows.length) {
-    scoreBody.innerHTML = `<tr><td colspan="9" class="px-3 py-4 text-[#718495]">No score table returned.</td></tr>`;
-  } else {
-    scoreRows
-      .slice()
-      .sort((a, b) => Number(b.totalScore || 0) - Number(a.totalScore || 0))
-      .forEach(row => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td class="px-3 py-3">${escapeHtml(row.fullName || "")}</td>
-          <td class="px-3 py-3">${escapeHtml(row.department || "")}</td>
-          <td class="px-3 py-3">${escapeHtml(row.validKeywordQuantity ?? "")}</td>
-          <td class="px-3 py-3">${escapeHtml(row.topicRelevance ?? "")}</td>
-          <td class="px-3 py-3">${escapeHtml(row.thinkingBreadth ?? "")}</td>
-          <td class="px-3 py-3">${escapeHtml(row.businessSense ?? "")}</td>
-          <td class="px-3 py-3">${escapeHtml(row.leadershipLens ?? "")}</td>
-          <td class="px-3 py-3 font-bold text-[#17324f]">${escapeHtml(row.totalScore ?? "")}</td>
-          <td class="px-3 py-3">${escapeHtml(row.finalLevel || "")}</td>
-        `;
-        scoreBody.appendChild(tr);
-      });
-  }
-
-  const cautionList = q("#gptCautionNotes");
-  cautionList.innerHTML = "";
-  const cautions = Array.isArray(data.cautionNotes) ? data.cautionNotes : [];
-  if (!cautions.length) {
-    cautionList.innerHTML = `<li>No caution notes returned.</li>`;
-  } else {
-    cautions.forEach(note => {
-      const li = document.createElement("li");
-      li.textContent = String(note);
-      cautionList.appendChild(li);
-    });
-  }
-
-  q("#gptDecisionGuide").textContent = data.facilitatorDecisionGuide || "Use GPT output as supporting input only. Final selection should be confirmed by facilitator/AHR observation.";
 }
 
 function buildAiPackage() {
@@ -1145,6 +1370,7 @@ async function ensureControlExists() {
     currentTopic: Number(control.currentTopic || 0),
     timerStatus: control.timerStatus || "ready",
     timerStartedAt: control.timerStartedAt || "",
+    timerStartedAtMs: Number(control.timerStartedAtMs || 0),
     timerDuration: TIMER_DURATION,
     updatedAt: new Date().toISOString()
   });
@@ -1154,11 +1380,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   setTopicUI(0);
   renderTimer();
 
+  onValue(serverOffsetRef, (snapshot) => {
+    serverTimeOffset = Number(snapshot.val() || 0);
+    renderTimer();
+    if (control.timerStatus === "running" && calculateRemainingTime() > 0) {
+      startTimerRefresh();
+    }
+  });
+
   onValue(controlRef, (snapshot) => {
     const data = snapshot.val();
 
     if (!data) {
-      control = { currentTopic: 0, timerStatus: "ready", timerStartedAt: "" };
+      control = { currentTopic: 0, timerStatus: "ready", timerStartedAt: "", timerStartedAtMs: 0 };
       ensureControlExists();
       return;
     }
@@ -1166,7 +1400,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     control = {
       currentTopic: Number(data.currentTopic || 0),
       timerStatus: data.timerStatus || "ready",
-      timerStartedAt: data.timerStartedAt || ""
+      timerStartedAt: data.timerStartedAt || "",
+      timerStartedAtMs: Number(data.timerStartedAtMs || 0)
     };
 
     setTopicUI(control.currentTopic);
@@ -1272,6 +1507,40 @@ document.addEventListener("DOMContentLoaded", async () => {
   q("#downloadSummary").addEventListener("click", downloadSummary);
   q("#resetAnswers").addEventListener("click", resetAnswers);
   q("#runGptAnalysis").addEventListener("click", runGptAnalysis);
+
+  q("#openCloudFullscreen").addEventListener("click", () => {
+    q("#fullscreenTopicTitle").textContent =
+      `${topics[Number(control.currentTopic)].label} — ${topics[Number(control.currentTopic)].title}`;
+
+    q("#cloudFullscreenModal").classList.remove("hidden");
+    document.body.classList.add("cloud-modal-open");
+
+    renderCloudArea("#fullscreenCloudArea", "#fullscreenCloudEmpty", {
+      maxWords: 95,
+      minSize: 20,
+      maxSize: 76,
+      wordWidthRatio: 0.34
+    });
+  });
+
+  q("#closeCloudFullscreen").addEventListener("click", () => {
+    q("#cloudFullscreenModal").classList.add("hidden");
+    document.body.classList.remove("cloud-modal-open");
+  });
+
+  q("#cloudFullscreenModal").addEventListener("click", (event) => {
+    if (event.target.id === "cloudFullscreenModal") {
+      q("#cloudFullscreenModal").classList.add("hidden");
+      document.body.classList.remove("cloud-modal-open");
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      q("#cloudFullscreenModal").classList.add("hidden");
+      document.body.classList.remove("cloud-modal-open");
+    }
+  });
 
   q("#copyAiPackage").addEventListener("click", async () => {
     const text = buildAiPackage();
