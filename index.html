@@ -353,7 +353,7 @@
                 <button id="downloadResponses" class="rounded-xl bg-[#17324f] text-white px-3 py-2 text-sm font-semibold" type="button">Download Full Responses</button>
                 <button id="downloadSummary" class="rounded-xl bg-[#edf2f6] text-[#17324f] px-3 py-2 text-sm font-semibold" type="button">Download Scored Summary</button>
                 <button id="copyAiPackage" class="rounded-xl bg-[#fff1e7] text-[#b65f27] px-3 py-2 text-sm font-semibold" type="button">Copy AI Analysis Package</button>
-                <button id="runGptAnalysis" class="rounded-xl bg-[#e7833f] text-white px-3 py-2 text-sm font-semibold hover:bg-[#d97531] transition disabled:opacity-60 disabled:cursor-not-allowed" type="button">Run GPT Analysis</button>
+                <button id="runGptAnalysis" class="rounded-xl bg-[#e7833f] text-white px-3 py-2 text-sm font-semibold hover:bg-[#d97531] transition disabled:opacity-60 disabled:cursor-not-allowed" type="button">Run AI Ranking</button>
               </div>
             </div>
 
@@ -362,9 +362,9 @@
             <section id="gptAnalysisPanel" class="rounded-3xl border border-[#e6ecf1] bg-[#fbfcfd] p-5 mb-6">
               <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4">
                 <div>
-                  <p class="text-[11px] tracking-[0.22em] uppercase text-[#e7833f] font-bold mb-1">GPT-Supported Analysis</p>
-                  <h3 class="text-[#0e2238] font-bold text-2xl">Team Leader Candidate Recommendation</h3>
-                  <p id="gptStatus" class="text-sm text-[#6b7f91] mt-2">Submit participant responses, then click <strong>Run GPT Analysis</strong>.</p>
+                  <p class="text-[11px] tracking-[0.22em] uppercase text-[#e7833f] font-bold mb-1">AI-Supported Ranking</p>
+                  <h3 class="text-[#0e2238] font-bold text-2xl">Team Leader Candidate Ranking</h3>
+                  <p id="gptStatus" class="text-sm text-[#6b7f91] mt-2">Submit participant responses, then click <strong>Run AI Ranking</strong>.</p>
                 </div>
                 <div class="rounded-2xl bg-white border border-[#e6ecf1] px-4 py-3 min-w-[180px]">
                   <div class="text-[11px] uppercase tracking-[0.16em] text-[#d97531] font-bold mb-1">AI Role</div>
@@ -379,25 +379,24 @@
                 </div>
 
                 <div class="rounded-2xl bg-white border border-[#e6ecf1] p-4">
-                  <h4 class="font-bold text-[#17324f] mb-3">Recommended Candidates</h4>
+                  <h4 class="font-bold text-[#17324f] mb-3">Ranking Results</h4>
                   <div id="gptCandidates" class="grid md:grid-cols-2 gap-3"></div>
                 </div>
 
                 <div class="rounded-2xl bg-white border border-[#e6ecf1] p-4">
-                  <h4 class="font-bold text-[#17324f] mb-3">GPT Score Table</h4>
+                  <h4 class="font-bold text-[#17324f] mb-3">AI Ranking Table</h4>
                   <div class="scroll-table rounded-2xl border border-[#e6ecf1]">
                     <table class="min-w-[980px] w-full text-sm">
                       <thead class="bg-[#f5f7f9] text-[#536678]">
                         <tr>
                           <th class="text-left px-3 py-3 font-semibold">Name</th>
                           <th class="text-left px-3 py-3 font-semibold">Dept</th>
-                          <th class="text-left px-3 py-3 font-semibold">Quantity</th>
-                          <th class="text-left px-3 py-3 font-semibold">Relevance</th>
-                          <th class="text-left px-3 py-3 font-semibold">Breadth</th>
-                          <th class="text-left px-3 py-3 font-semibold">Business</th>
-                          <th class="text-left px-3 py-3 font-semibold">Leadership</th>
-                          <th class="text-left px-3 py-3 font-semibold">Total</th>
-                          <th class="text-left px-3 py-3 font-semibold">Level</th>
+                          <th class="text-left px-3 py-3 font-semibold">Keyword Quantity</th>
+                          <th class="text-left px-3 py-3 font-semibold">Topic Relevance</th>
+                          <th class="text-left px-3 py-3 font-semibold">Thinking Breadth</th>
+                          <th class="text-left px-3 py-3 font-semibold">Business Understanding</th>
+                          <th class="text-left px-3 py-3 font-semibold">Leadership Signal</th>
+                          <th class="text-left px-3 py-3 font-semibold">Ranking Score</th>
                         </tr>
                       </thead>
                       <tbody id="gptScoreBody" class="divide-y divide-[#edf1f4]"></tbody>
@@ -407,7 +406,7 @@
 
                 <div class="grid lg:grid-cols-2 gap-4">
                   <div class="rounded-2xl bg-white border border-[#e6ecf1] p-4">
-                    <h4 class="font-bold text-[#17324f] mb-2">Caution Notes</h4>
+                    <h4 class="font-bold text-[#17324f] mb-2">Facilitator Review Notes</h4>
                     <ul id="gptCautionNotes" class="list-disc pl-5 text-sm text-[#526478] space-y-1"></ul>
                   </div>
                   <div class="rounded-2xl bg-white border border-[#e6ecf1] p-4">
@@ -430,19 +429,21 @@
               </div>
 
               <div class="rounded-2xl border border-[#e6ecf1] bg-[#fbfcfd] p-4">
-                <h3 class="font-bold text-[#17324f] mb-3">Scoring Guide</h3>
-                <div class="space-y-2 text-sm">
-                  <div class="rounded-xl bg-[#edf8f3] text-[#1a6a4f] px-3 py-2">22–25: Strong Team Leader Candidate</div>
-                  <div class="rounded-xl bg-[#f0f6fb] text-[#2b5f86] px-3 py-2">18–21: Potential Team Leader Candidate</div>
-                  <div class="rounded-xl bg-[#fff7ec] text-[#9b632a] px-3 py-2">15–17: Needs facilitator review</div>
-                  <div class="rounded-xl bg-[#fbefef] text-[#a34b4b] px-3 py-2">Below 15: Not prioritized</div>
+                <h3 class="font-bold text-[#17324f] mb-3">Ranking Focus</h3>
+                <div class="space-y-2 text-sm text-[#526478] leading-relaxed">
+                  <div class="rounded-xl bg-[#f0f6fb] px-3 py-2">
+                    Ranking is shown from highest to lowest based on keyword match, topic relevance, and business understanding.
+                  </div>
+                  <div class="rounded-xl bg-[#fff7ec] px-3 py-2">
+                    AI output is only a support input. Final Team Leader selection should combine the ranking, leader pitch, and facilitator observation.
+                  </div>
                 </div>
               </div>
             </div>
 
             <div class="space-y-6">
               <div>
-                <h3 class="font-bold text-[#17324f] mb-3">Keyword-Based Scored Summary</h3>
+                <h3 class="font-bold text-[#17324f] mb-3">Keyword & Business Insight Ranking</h3>
                 <div class="scroll-table rounded-2xl border border-[#e6ecf1]">
                   <table class="min-w-[1380px] w-full text-sm">
                     <thead class="bg-[#f5f7f9] text-[#536678]">
@@ -450,24 +451,22 @@
                         <th class="text-left px-3 py-3 font-semibold">Rank</th>
                         <th class="text-left px-3 py-3 font-semibold">Name</th>
                         <th class="text-left px-3 py-3 font-semibold">Dept</th>
-                        <th class="text-left px-3 py-3 font-semibold">Valid</th>
-                        <th class="text-left px-3 py-3 font-semibold">Matched</th>
-                        <th class="text-left px-3 py-3 font-semibold">Quantity</th>
-                        <th class="text-left px-3 py-3 font-semibold">Relevance</th>
-                        <th class="text-left px-3 py-3 font-semibold">Breadth</th>
-                        <th class="text-left px-3 py-3 font-semibold">Business</th>
-                        <th class="text-left px-3 py-3 font-semibold">Leadership</th>
-                        <th class="text-left px-3 py-3 font-semibold">Total /25</th>
-                        <th class="text-left px-3 py-3 font-semibold">Recommendation</th>
-                        <th class="text-left px-3 py-3 font-semibold">Signals</th>
-                        <th class="text-left px-3 py-3 font-semibold">Unmatched</th>
+                        <th class="text-left px-3 py-3 font-semibold">Valid Keywords</th>
+                        <th class="text-left px-3 py-3 font-semibold">Matched Keywords</th>
+                        <th class="text-left px-3 py-3 font-semibold">Match Score</th>
+                        <th class="text-left px-3 py-3 font-semibold">Topic Breadth</th>
+                        <th class="text-left px-3 py-3 font-semibold">Business Understanding</th>
+                        <th class="text-left px-3 py-3 font-semibold">Leadership Signal</th>
+                        <th class="text-left px-3 py-3 font-semibold">Ranking Score</th>
+                        <th class="text-left px-3 py-3 font-semibold">Key Signals</th>
+                        <th class="text-left px-3 py-3 font-semibold">New / Unmatched Keywords</th>
                       </tr>
                     </thead>
                     <tbody id="scoreBody" class="divide-y divide-[#edf1f4]"></tbody>
                   </table>
                 </div>
                 <p class="text-xs text-[#7a8c9b] mt-3">
-                  Ranking is based on rule-based keyword signal scoring. Final Team Leader Candidate selection should also consider facilitator observation and leader pitch.
+                  Ranking is based on keyword matching, topic relevance, business understanding, and leadership-related signals. Final selection should also consider leader pitch and facilitator observation.
                 </p>
               </div>
 
@@ -548,6 +547,44 @@ const serverOffsetRef = ref(db, ".info/serverTimeOffset");
 
 const TIMER_DURATION = 30;
 const WORKER_ANALYZE_URL = "https://talent-uplift-ai-analysis.miyujin99.workers.dev/";
+
+const AI_FETCH_TIMEOUT_MS = 90000;
+const AI_MAX_RETRIES = 3;
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = AI_FETCH_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(url, {
+      ...options,
+      mode: "cors",
+      cache: "no-store",
+      signal: controller.signal
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+function getFriendlyAiFetchError(error) {
+  const raw = String(error?.message || error || "");
+
+  if (raw.includes("AbortError") || raw.toLowerCase().includes("aborted")) {
+    return "AI request timed out. Please try again or use a network that routes Cloudflare Worker through SIN.";
+  }
+
+  if (raw.toLowerCase().includes("failed to fetch")) {
+    return "Network/CORS fetch failed. Please open the Worker URL once in the same browser to confirm it is reachable, then try again. If laptop Wi-Fi routes through HKG, use mobile hotspot/4G.";
+  }
+
+  return raw;
+}
+
 
 const topics = [
   {
@@ -1107,21 +1144,20 @@ function renderResults() {
     if (s.rank === 1) tr.className = "bg-[#fff8f3]";
     else if (s.rank <= 3) tr.className = "bg-[#f0f6fb]";
 
+    const matchScore = s.validCount ? `${s.matchedCount}/${s.validCount}` : "0/0";
     tr.innerHTML = `
       <td class="px-3 py-3 font-bold text-[#17324f]">${s.rank}</td>
       <td class="px-3 py-3">${escapeHtml(s.fullName)}</td>
       <td class="px-3 py-3">${escapeHtml(s.department)}</td>
       <td class="px-3 py-3">${s.validCount}</td>
       <td class="px-3 py-3">${s.matchedCount}</td>
-      <td class="px-3 py-3">${s.quantityScore}</td>
-      <td class="px-3 py-3">${s.relevanceScore}</td>
+      <td class="px-3 py-3">${matchScore}</td>
       <td class="px-3 py-3">${s.breadthScore}</td>
       <td class="px-3 py-3">${s.businessScore}</td>
       <td class="px-3 py-3">${s.leadershipScore}</td>
       <td class="px-3 py-3 font-bold text-[#17324f]">${s.totalScore}</td>
-      <td class="px-3 py-3">${escapeHtml(s.recommendation)}</td>
-      <td class="px-3 py-3 max-w-[260px]">${escapeHtml(s.signals.join(", "))}</td>
-      <td class="px-3 py-3 max-w-[220px]">${escapeHtml(s.unmatched.join(", "))}</td>
+      <td class="px-3 py-3 max-w-[300px]">${escapeHtml(s.signals.join(", "))}</td>
+      <td class="px-3 py-3 max-w-[260px]">${escapeHtml(s.unmatched.join(", "))}</td>
     `;
     scoreBody.appendChild(tr);
   });
@@ -1136,6 +1172,29 @@ function escapeHtml(value) {
     "'": "&#39;"
   }[s]));
 }
+
+function softenAiText(value) {
+  return String(value ?? "")
+    .replace(/not prioritized/gi, "for facilitator review")
+    .replace(/lacked depth in business sense and leadership breadth/gi, "would benefit from more business-focused and leadership-oriented keywords")
+    .replace(/did not demonstrate adequate relevance or leadership potential/gi, "has limited evidence in the current keyword data, so more facilitator observation is recommended")
+    .replace(/minimal/gi, "brief")
+    .replace(/low business sense/gi, "limited business signal in the keywords")
+    .replace(/low relevance/gi, "limited topic match in the current keywords")
+    .replace(/lack of business sense/gi, "limited business signal in the current keywords")
+    .replace(/limited leadership keywords/gi, "could show more leadership-related keywords")
+    .replace(/limited breadth of thinking/gi, "could show more variety across business angles")
+    .replace(/not demonstrate/gi, "does not yet show clearly in the keyword data")
+    .replace(/failed to/gi, "did not yet")
+    .replace(/weak/gi, "still developing");
+}
+
+function softList(items) {
+  return (Array.isArray(items) ? items : [])
+    .map(item => softenAiText(item))
+    .filter(Boolean);
+}
+
 
 function toCSV(rows) {
   return rows.map(row => row.map(v => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
@@ -1170,14 +1229,14 @@ function downloadResponses() {
 function downloadSummary() {
   const rows = [[
     "Rank","Full Name","Department","Valid Keyword Count","Matched Keyword Count",
-    "Quantity Score","Relevance Score","Breadth Score","Business Score","Leadership Score",
-    "Total Score","Recommendation","Signals","Unmatched Keywords"
+    "Match Score","Topic Breadth Score","Business Understanding Score","Leadership Signal Score",
+    "Ranking Score","Signals","Unmatched Keywords"
   ]];
 
   getScoredSummary().forEach(s => rows.push([
     s.rank, s.fullName, s.department, s.validCount, s.matchedCount,
-    s.quantityScore, s.relevanceScore, s.breadthScore, s.businessScore, s.leadershipScore,
-    s.totalScore, s.recommendation, s.signals.join(", "), s.unmatched.join(", ")
+    s.validCount ? `${s.matchedCount}/${s.validCount}` : "0/0", s.breadthScore, s.businessScore, s.leadershipScore,
+    s.totalScore, s.signals.join(", "), s.unmatched.join(", ")
   ]));
 
   downloadFile("talent-uplift-keyword-scored-summary.csv", toCSV(rows));
@@ -1199,17 +1258,17 @@ function renderGptAnalysisResult(result) {
   q("#gptResult").classList.remove("hidden");
 
   q("#gptExecutiveSummary").textContent =
-    result.executiveSummary || "No executive summary returned.";
+    softenAiText(result.executiveSummary || "No executive summary returned.");
 
   const candidatesWrap = q("#gptCandidates");
   candidatesWrap.innerHTML = "";
 
   const candidates = Array.isArray(result.recommendedCandidates)
-    ? result.recommendedCandidates
+    ? [...result.recommendedCandidates].sort((a, b) => Number(a.rank || 999) - Number(b.rank || 999))
     : [];
 
   if (!candidates.length) {
-    candidatesWrap.innerHTML = `<div class="text-sm text-[#7a8c9b]">No recommended candidates returned.</div>`;
+    candidatesWrap.innerHTML = `<div class="text-sm text-[#7a8c9b]">No ranking results returned.</div>`;
   } else {
     candidates.forEach(candidate => {
       const card = document.createElement("div");
@@ -1221,17 +1280,17 @@ function renderGptAnalysisResult(result) {
             <div class="text-lg font-bold text-[#17324f]">${escapeHtml(candidate.fullName || "Unnamed")}</div>
             <div class="text-sm text-[#6b7f91]">${escapeHtml(candidate.department || "")}</div>
           </div>
-          <div class="rounded-full bg-[#fff1e7] text-[#b65f27] px-3 py-1 text-xs font-bold whitespace-nowrap">${escapeHtml(candidate.recommendation || "Review")}</div>
+          <div class="rounded-full bg-[#fff1e7] text-[#b65f27] px-3 py-1 text-xs font-bold whitespace-nowrap">Ranked for review</div>
         </div>
-        <p class="text-sm text-[#526478] leading-relaxed mb-3">${escapeHtml(candidate.rationale || "")}</p>
+        <p class="text-sm text-[#526478] leading-relaxed mb-3">${escapeHtml(softenAiText(candidate.rationale || ""))}</p>
         <div class="grid sm:grid-cols-2 gap-3 text-sm">
           <div>
-            <div class="font-bold text-[#17324f] mb-1">Strength Signals</div>
-            <ul class="list-disc pl-5 text-[#526478]">${(candidate.strengthSignals || []).map(x => `<li>${escapeHtml(x)}</li>`).join("") || "<li>-</li>"}</ul>
+            <div class="font-bold text-[#17324f] mb-1">Observed Strength Signals</div>
+            <ul class="list-disc pl-5 text-[#526478]">${softList(candidate.strengthSignals).map(x => `<li>${escapeHtml(x)}</li>`).join("") || "<li>-</li>"}</ul>
           </div>
           <div>
-            <div class="font-bold text-[#17324f] mb-1">Watchouts</div>
-            <ul class="list-disc pl-5 text-[#526478]">${(candidate.watchouts || []).map(x => `<li>${escapeHtml(x)}</li>`).join("") || "<li>-</li>"}</ul>
+            <div class="font-bold text-[#17324f] mb-1">Additional Review Points</div>
+            <ul class="list-disc pl-5 text-[#526478]">${softList(candidate.watchouts).map(x => `<li>${escapeHtml(x)}</li>`).join("") || "<li>No major review points returned.</li>"}</ul>
           </div>
         </div>
       `;
@@ -1241,7 +1300,9 @@ function renderGptAnalysisResult(result) {
 
   const scoreBody = q("#gptScoreBody");
   scoreBody.innerHTML = "";
-  const scoreTable = Array.isArray(result.scoreTable) ? result.scoreTable : [];
+  const scoreTable = Array.isArray(result.scoreTable)
+    ? [...result.scoreTable].sort((a, b) => Number(b.totalScore || 0) - Number(a.totalScore || 0))
+    : [];
 
   scoreTable.forEach(row => {
     const tr = document.createElement("tr");
@@ -1254,17 +1315,16 @@ function renderGptAnalysisResult(result) {
       <td class="px-3 py-3">${escapeHtml(row.businessSense ?? "")}</td>
       <td class="px-3 py-3">${escapeHtml(row.leadershipLens ?? "")}</td>
       <td class="px-3 py-3 font-bold text-[#17324f]">${escapeHtml(row.totalScore ?? "")}</td>
-      <td class="px-3 py-3">${escapeHtml(row.finalLevel || "")}</td>
     `;
     scoreBody.appendChild(tr);
   });
 
   const cautions = Array.isArray(result.cautionNotes) ? result.cautionNotes : [];
   q("#gptCautionNotes").innerHTML =
-    cautions.map(note => `<li>${escapeHtml(note)}</li>`).join("") || `<li>No caution notes returned.</li>`;
+    cautions.map(note => `<li>${escapeHtml(softenAiText(note))}</li>`).join("") || `<li>No additional review notes returned.</li>`;
 
   q("#gptDecisionGuide").textContent =
-    result.facilitatorDecisionGuide || "Please review GPT output together with facilitator observation and leader pitch.";
+    softenAiText(result.facilitatorDecisionGuide || "Please review AI output together with facilitator observation and leader pitch.");
 }
 
 async function runGptAnalysis() {
@@ -1272,40 +1332,73 @@ async function runGptAnalysis() {
   const status = q("#gptStatus");
 
   if (!submissions.length) {
-    status.innerHTML = `<span class="text-[#b4412b] font-semibold">No submissions yet. Please collect participant responses before running GPT analysis.</span>`;
+    status.innerHTML = `<span class="text-[#b4412b] font-semibold">No submissions yet. Please collect participant responses before running AI ranking.</span>`;
     return;
   }
+
+  const payload = JSON.stringify({
+    submissions: getFullResponseRowsForAi(),
+    scoredSummary: getScoredSummary(),
+    analysisGuidelines: {
+      rankingMode: "Rank participants from highest to lowest only. Do not classify as Strong/Potential/Not Prioritized.",
+      criteriaFocus: ["keyword match", "topic relevance", "business understanding", "thinking breadth", "leadership-related signals"],
+      tone: "Use supportive, neutral, facilitator-friendly language. Avoid harsh labels such as lacked depth, low business sense, not prioritized, weak, failed, or did not demonstrate leadership potential.",
+      wordingPreference: "Use phrases like 'would benefit from', 'could show more', 'shows early signals of', 'needs facilitator observation', and 'based on current keyword data'."
+    }
+  });
 
   button.disabled = true;
   button.textContent = "Analyzing...";
   status.innerHTML = `<span class="text-[#17324f] font-semibold">Analyzing participant responses through the AI Worker...</span>`;
 
+  let lastError = null;
+
   try {
-    const response = await fetch(WORKER_ANALYZE_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        submissions: getFullResponseRowsForAi(),
-        scoredSummary: getScoredSummary()
-      })
-    });
+    for (let attempt = 1; attempt <= AI_MAX_RETRIES; attempt++) {
+      try {
+        status.innerHTML = `<span class="text-[#17324f] font-semibold">Analyzing participant responses through the AI Worker... Attempt ${attempt}/${AI_MAX_RETRIES}</span>`;
 
-    const data = await response.json();
+        const response = await fetchWithTimeout(WORKER_ANALYZE_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: payload
+        });
 
-    if (!response.ok || data.error) {
-      const message = data.error
-        ? `${data.error}${data.detail ? ": " + JSON.stringify(data.detail) : ""}`
-        : `HTTP ${response.status}`;
-      throw new Error(message);
+        let data = {};
+        const responseText = await response.text();
+
+        try {
+          data = responseText ? JSON.parse(responseText) : {};
+        } catch {
+          data = { error: "Worker returned non-JSON response", detail: responseText.slice(0, 500) };
+        }
+
+        if (!response.ok || data.error) {
+          const message = data.error
+            ? `${data.error}${data.detail ? ": " + JSON.stringify(data.detail) : ""}`
+            : `HTTP ${response.status}`;
+          throw new Error(message);
+        }
+
+        renderGptAnalysisResult(data);
+        status.innerHTML = `<span class="text-[#16845b] font-semibold">AI ranking completed. Please review as support input only.</span>`;
+        return;
+      } catch (error) {
+        lastError = error;
+
+        if (attempt < AI_MAX_RETRIES) {
+          status.innerHTML = `<span class="text-[#b65f27] font-semibold">Attempt ${attempt} failed. Retrying in a few seconds...</span>`;
+          await sleep(1500 * attempt);
+        }
+      }
     }
 
-    renderGptAnalysisResult(data);
-    status.innerHTML = `<span class="text-[#16845b] font-semibold">GPT analysis completed. Please review as support input only.</span>`;
+    throw lastError;
   } catch (error) {
-    status.innerHTML = `<span class="text-[#b4412b] font-semibold">Could not run GPT analysis. ${escapeHtml(String(error.message || error))}</span>`;
+    status.innerHTML = `<span class="text-[#b4412b] font-semibold">Could not run AI ranking. ${escapeHtml(getFriendlyAiFetchError(error))}</span>`;
   } finally {
     button.disabled = false;
-    button.textContent = "Run GPT Analysis";
+    button.textContent = "Run AI Ranking";
   }
 }
 
@@ -1340,11 +1433,14 @@ Important:
 Do not select candidates only based on keyword quantity. Prioritize balanced business thinking and leadership potential.
 
 Output required:
-A. Final recommended Team Leader Candidates
-B. Score adjustment notes if any
-C. Rationale for each recommended candidate
-D. Caution notes: participants with high quantity but lower quality, or fewer keywords but stronger business thinking
-E. Final group: Strong / Potential / Needs Review
+A. Candidate ranking from highest to lowest
+B. Rationale for each ranked candidate
+C. Observed strength signals
+D. Additional review points, written in supportive and neutral language
+E. Facilitator decision guide
+
+Tone rule:
+Use supportive, neutral, facilitator-friendly language. Avoid harsh labels such as "not prioritized", "lacked depth", "low business sense", "weak", "failed", or "did not demonstrate leadership potential". Use phrases such as "would benefit from", "could show more", "shows early signals of", and "based on current keyword data".
 
 RULE-BASED SCORED SUMMARY:
 ${JSON.stringify(scoreRows, null, 2)}
