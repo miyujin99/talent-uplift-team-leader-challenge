@@ -52,12 +52,65 @@
 
     .cloud-word {
       position: absolute;
-      transform: translate(-50%, -50%);
+      transform: none;
       line-height: 1;
       white-space: nowrap;
       font-weight: 800;
       transition: all .25s ease;
       animation: fadeIn .35s ease both;
+      display: inline-block;
+      max-width: 46%;
+      padding: 3px 7px;
+      border-radius: 999px;
+      text-align: center;
+      user-select: none;
+    }
+
+    .cloud-area-flex {
+      position: relative;
+      display: block;
+      padding: 22px;
+      overflow: hidden;
+    }
+
+    .fullscreen-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(14, 34, 56, 0.92);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      padding: 22px;
+    }
+
+    .fullscreen-modal.hidden {
+      display: none;
+    }
+
+    .fullscreen-cloud-box {
+      flex: 1;
+      background: #f7f9fb;
+      border-radius: 28px;
+      border: 1px solid #e8edf2;
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, .28);
+    }
+
+    .fullscreen-cloud-area {
+      position: relative;
+      min-height: calc(100vh - 180px);
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      padding: 40px;
+    }
+
+    .fullscreen-cloud-area .cloud-word {
+      max-width: 38%;
+    }
+
+    body.cloud-modal-open {
+      overflow: hidden;
     }
 
     .fade-in { animation: fadeIn .35s ease both; }
@@ -211,10 +264,15 @@
                 <h2 class="text-[#0e2238] font-bold text-2xl">Word Cloud</h2>
                 <p class="text-[#7a8c9b] mt-1">Shows submitted keywords for the current topic.</p>
               </div>
-              <div class="w-10 h-10 rounded-xl bg-[#eef3f7] text-[#17324f] flex items-center justify-center font-bold">☁</div>
+              <div class="flex items-center gap-2">
+                <button id="openCloudFullscreen" class="rounded-xl bg-[#17324f] text-white px-3 py-2 text-xs font-semibold hover:bg-[#10253c] transition" type="button">
+                  Full Screen
+                </button>
+                <div class="w-10 h-10 rounded-xl bg-[#eef3f7] text-[#17324f] flex items-center justify-center font-bold">☁</div>
+              </div>
             </div>
-            <div id="cloudArea" class="relative rounded-2xl bg-[#f7f9fb] border border-[#e8edf2] h-[380px] overflow-hidden">
-              <div id="cloudEmpty" class="absolute inset-0 flex items-center justify-center text-center px-8 text-[#90a0ae]">
+            <div id="cloudArea" class="cloud-area-flex relative rounded-2xl bg-[#f7f9fb] border border-[#e8edf2] h-[380px] overflow-hidden">
+              <div id="cloudEmpty" class="flex items-center justify-center text-center px-8 text-[#90a0ae]">
                 No keywords submitted yet for this topic.
               </div>
             </div>
@@ -377,6 +435,33 @@
         </div>
       </section>
     </main>
+  </div>
+
+  <div id="cloudFullscreenModal" class="fullscreen-modal hidden">
+    <div class="flex items-center justify-between gap-4 mb-4 text-white">
+      <div>
+        <div class="text-[12px] tracking-[0.22em] uppercase text-[#f3b183] font-bold mb-1">
+          Live Word Cloud
+        </div>
+        <h2 id="fullscreenTopicTitle" class="text-3xl md:text-5xl font-bold leading-tight">
+          Current Topic
+        </h2>
+      </div>
+
+      <button id="closeCloudFullscreen"
+        class="rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 px-4 py-3 text-sm font-semibold"
+        type="button">
+        Close
+      </button>
+    </div>
+
+    <div class="fullscreen-cloud-box">
+      <div id="fullscreenCloudArea" class="fullscreen-cloud-area">
+        <div id="fullscreenCloudEmpty" class="text-[#90a0ae] text-center text-xl">
+          No keywords submitted yet for this topic.
+        </div>
+      </div>
+    </div>
   </div>
 
 <script type="module">
@@ -677,11 +762,7 @@ async function nextTopic() {
   await setTopic(next);
 }
 
-function renderCloud() {
-  const cloud = q("#cloudArea");
-  qa(".cloud-word").forEach(el => el.remove());
-  const empty = q("#cloudEmpty");
-
+function getCurrentTopicWordFrequency() {
   const topicRecords = submissions.filter(r => Number(r.topicId) === Number(control.currentTopic) + 1);
   const freq = {};
 
@@ -693,37 +774,158 @@ function renderCloud() {
     });
   });
 
-  const words = Object.values(freq).sort((a, b) => b.count - a.count).slice(0, 32);
+  return Object.values(freq).sort((a, b) => b.count - a.count);
+}
+
+function boxesOverlap(a, b, padding = 6) {
+  return !(
+    a.right + padding < b.left ||
+    a.left - padding > b.right ||
+    a.bottom + padding < b.top ||
+    a.top - padding > b.bottom
+  );
+}
+
+function findCloudPosition(wordWidth, wordHeight, placed, areaWidth, areaHeight, index) {
+  const centerX = areaWidth / 2;
+  const centerY = areaHeight / 2;
+  const maxRadiusX = Math.max(20, areaWidth * 0.46);
+  const maxRadiusY = Math.max(20, areaHeight * 0.42);
+
+  // Spiral placement: largest words go near the center, smaller words radiate out.
+  for (let attempt = 0; attempt < 520; attempt++) {
+    const progress = attempt / 520;
+    const angle = attempt * 0.55 + index * 1.37;
+    const radiusX = 8 + progress * maxRadiusX;
+    const radiusY = 6 + progress * maxRadiusY;
+
+    const jitterX = Math.sin((attempt + index) * 2.13) * 6;
+    const jitterY = Math.cos((attempt + index) * 1.71) * 5;
+
+    const x = centerX + Math.cos(angle) * radiusX + jitterX - wordWidth / 2;
+    const y = centerY + Math.sin(angle) * radiusY + jitterY - wordHeight / 2;
+
+    const box = {
+      left: x,
+      top: y,
+      right: x + wordWidth,
+      bottom: y + wordHeight
+    };
+
+    const inside =
+      box.left >= 8 &&
+      box.top >= 8 &&
+      box.right <= areaWidth - 8 &&
+      box.bottom <= areaHeight - 8;
+
+    if (!inside) continue;
+
+    const collides = placed.some(existing => boxesOverlap(box, existing, 7));
+    if (!collides) return { x, y, box };
+  }
+
+  // Fallback: scan a loose grid if spiral cannot place a long word.
+  const stepX = Math.max(18, Math.floor(wordWidth * 0.42));
+  const stepY = Math.max(16, Math.floor(wordHeight * 0.95));
+  for (let y = 10; y <= areaHeight - wordHeight - 10; y += stepY) {
+    for (let x = 10; x <= areaWidth - wordWidth - 10; x += stepX) {
+      const box = { left: x, top: y, right: x + wordWidth, bottom: y + wordHeight };
+      const collides = placed.some(existing => boxesOverlap(box, existing, 5));
+      if (!collides) return { x, y, box };
+    }
+  }
+
+  return null;
+}
+
+function renderCloudArea(areaSelector, emptySelector, options = {}) {
+  const area = q(areaSelector);
+  const empty = q(emptySelector);
+
+  if (!area) return;
+
+  Array.from(area.querySelectorAll(".cloud-word")).forEach(el => el.remove());
+
+  const words = getCurrentTopicWordFrequency().slice(0, options.maxWords || 60);
 
   if (!words.length) {
-    empty.classList.remove("hidden");
+    if (empty) empty.classList.remove("hidden");
     return;
   }
 
-  empty.classList.add("hidden");
+  if (empty) empty.classList.add("hidden");
 
-  const spots = [
-    [50,48],[30,35],[68,33],[38,62],[66,65],[18,50],[82,51],[50,22],
-    [51,76],[22,23],[79,24],[18,75],[83,76],[35,18],[66,18],[34,82],
-    [67,84],[11,38],[89,38],[12,63],[88,63],[50,10],[50,90],[25,88],
-    [76,88],[25,12],[77,12],[12,88],[88,12],[41,44],[58,57],[45,70]
-  ];
-
+  const areaWidth = area.clientWidth || 420;
+  const areaHeight = area.clientHeight || 380;
   const max = words[0].count;
-  const colors = ["#17324f","#244c71","#e7833f","#40617d","#6c879d","#0e2238"];
+  const colors = ["#17324f", "#244c71", "#e7833f", "#40617d", "#6c879d", "#0e2238", "#b65f27"];
+  const placed = [];
 
   words.forEach((word, i) => {
     const el = document.createElement("span");
     el.className = "cloud-word";
-    const size = 15 + Math.round((word.count / max) * 26);
-    el.style.left = `${spots[i][0]}%`;
-    el.style.top = `${spots[i][1]}%`;
+
+    const minSize = options.minSize || 14;
+    const maxSize = options.maxSize || 38;
+    const size = minSize + Math.round((word.count / max) * (maxSize - minSize));
+
     el.style.fontSize = `${size}px`;
     el.style.color = colors[i % colors.length];
-    el.style.animationDelay = `${i * .02}s`;
+    el.style.animationDelay = `${i * 0.012}s`;
+    el.style.left = "0px";
+    el.style.top = "0px";
+    el.style.visibility = "hidden";
+
+    if (word.count > 1) el.title = `${word.text} (${word.count})`;
     el.textContent = word.text;
-    cloud.appendChild(el);
+    area.appendChild(el);
+
+    let w = Math.ceil(el.offsetWidth);
+    let h = Math.ceil(el.offsetHeight);
+
+    // Keep very long words from breaking the cloud layout.
+    const maxAllowedWidth = Math.floor(areaWidth * (options.wordWidthRatio || 0.42));
+    if (w > maxAllowedWidth) {
+      el.style.whiteSpace = "normal";
+      el.style.maxWidth = `${maxAllowedWidth}px`;
+      w = Math.ceil(el.offsetWidth);
+      h = Math.ceil(el.offsetHeight);
+    }
+
+    const position = findCloudPosition(w, h, placed, areaWidth, areaHeight, i);
+
+    if (position) {
+      el.style.left = `${position.x}px`;
+      el.style.top = `${position.y}px`;
+      el.style.visibility = "visible";
+      placed.push(position.box);
+    } else {
+      // If there is truly no space, hide low-frequency overflow words instead of overlapping.
+      el.remove();
+    }
   });
+}
+
+function renderCloud() {
+  renderCloudArea("#cloudArea", "#cloudEmpty", {
+    maxWords: 32,
+    minSize: 14,
+    maxSize: 38,
+    wordWidthRatio: 0.38
+  });
+
+  const modal = q("#cloudFullscreenModal");
+  if (modal && !modal.classList.contains("hidden")) {
+    renderCloudArea("#fullscreenCloudArea", "#fullscreenCloudEmpty", {
+      maxWords: 95,
+      minSize: 20,
+      maxSize: 76,
+      wordWidthRatio: 0.34
+    });
+
+    q("#fullscreenTopicTitle").textContent =
+      `${topics[Number(control.currentTopic)].label} — ${topics[Number(control.currentTopic)].title}`;
+  }
 }
 
 function scoreParticipant(records) {
@@ -1117,6 +1319,40 @@ document.addEventListener("DOMContentLoaded", async () => {
   q("#downloadResponses").addEventListener("click", downloadResponses);
   q("#downloadSummary").addEventListener("click", downloadSummary);
   q("#resetAnswers").addEventListener("click", resetAnswers);
+
+  q("#openCloudFullscreen").addEventListener("click", () => {
+    q("#fullscreenTopicTitle").textContent =
+      `${topics[Number(control.currentTopic)].label} — ${topics[Number(control.currentTopic)].title}`;
+
+    q("#cloudFullscreenModal").classList.remove("hidden");
+    document.body.classList.add("cloud-modal-open");
+
+    renderCloudArea("#fullscreenCloudArea", "#fullscreenCloudEmpty", {
+      maxWords: 95,
+      minSize: 20,
+      maxSize: 76,
+      wordWidthRatio: 0.34
+    });
+  });
+
+  q("#closeCloudFullscreen").addEventListener("click", () => {
+    q("#cloudFullscreenModal").classList.add("hidden");
+    document.body.classList.remove("cloud-modal-open");
+  });
+
+  q("#cloudFullscreenModal").addEventListener("click", (event) => {
+    if (event.target.id === "cloudFullscreenModal") {
+      q("#cloudFullscreenModal").classList.add("hidden");
+      document.body.classList.remove("cloud-modal-open");
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      q("#cloudFullscreenModal").classList.add("hidden");
+      document.body.classList.remove("cloud-modal-open");
+    }
+  });
 
   q("#copyAiPackage").addEventListener("click", async () => {
     const text = buildAiPackage();
