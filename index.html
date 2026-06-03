@@ -381,7 +381,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-import { getDatabase, ref, onValue, push, set, update, remove } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
+import { getDatabase, ref, onValue, push, set, update, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAGtdqky4nCXz7olE11zWNMuDGfB5C2xpo",
@@ -399,6 +399,7 @@ const db = getDatabase(app);
 const SESSION_ID = "talent-uplift-bootcamp-2026-live";
 const controlRef = ref(db, `sessions/${SESSION_ID}/control`);
 const submissionsRef = ref(db, `sessions/${SESSION_ID}/submissions`);
+const serverOffsetRef = ref(db, ".info/serverTimeOffset");
 
 const TIMER_DURATION = 30;
 
@@ -500,10 +501,12 @@ const qa = (sel) => Array.from(document.querySelectorAll(sel));
 let control = {
   currentTopic: 0,
   timerStatus: "ready",
-  timerStartedAt: ""
+  timerStartedAt: "",
+  timerStartedAtMs: 0
 };
 let submissions = [];
 let timerRefreshInterval = null;
+let serverTimeOffset = 0;
 
 function kw(normalized, synonyms, categories, weight) {
   return { normalized, synonyms, categories, weight };
@@ -554,15 +557,32 @@ function setTopicUI(index) {
   q("#facilitatorActiveTopic").textContent = `${topics[index].label} · ${topics[index].title}`;
 }
 
+function getSyncedNowMs() {
+  return Date.now() + Number(serverTimeOffset || 0);
+}
+
+function getTimerStartMs() {
+  const fromServer = Number(control.timerStartedAtMs || 0);
+  if (fromServer > 0) return fromServer;
+
+  // Legacy fallback for old control records created before this fix.
+  const parsed = Date.parse(control.timerStartedAt || "");
+  if (!parsed || Number.isNaN(parsed)) return 0;
+  return parsed;
+}
+
 function calculateRemainingTime() {
   if (control.timerStatus === "ready") return TIMER_DURATION;
   if (control.timerStatus === "ended") return 0;
+
   if (control.timerStatus === "running") {
-    const start = Date.parse(control.timerStartedAt || "");
-    if (!start || Number.isNaN(start)) return TIMER_DURATION;
-    const elapsed = Math.floor((Date.now() - start) / 1000);
-    return Math.max(0, TIMER_DURATION - elapsed);
+    const startMs = getTimerStartMs();
+    if (!startMs) return TIMER_DURATION;
+
+    const elapsed = Math.floor((getSyncedNowMs() - startMs) / 1000);
+    return Math.max(0, TIMER_DURATION - Math.max(0, elapsed));
   }
+
   return TIMER_DURATION;
 }
 
@@ -623,6 +643,8 @@ async function setTopic(index) {
     currentTopic: index,
     timerStatus: "ready",
     timerStartedAt: "",
+    timerStartedAtMs: 0,
+    timerDuration: TIMER_DURATION,
     updatedAt: new Date().toISOString()
   });
   q("#keywords").value = "";
@@ -631,7 +653,10 @@ async function setTopic(index) {
 async function startTimer() {
   await update(controlRef, {
     timerStatus: "running",
+    // Human-readable backup only; not used as the official timer source.
     timerStartedAt: new Date().toISOString(),
+    // Official source of truth. Firebase resolves this using server time.
+    timerStartedAtMs: serverTimestamp(),
     timerDuration: TIMER_DURATION,
     updatedAt: new Date().toISOString()
   });
@@ -641,6 +666,7 @@ async function resetTimer() {
   await update(controlRef, {
     timerStatus: "ready",
     timerStartedAt: "",
+    timerStartedAtMs: 0,
     timerDuration: TIMER_DURATION,
     updatedAt: new Date().toISOString()
   });
@@ -955,6 +981,7 @@ async function ensureControlExists() {
     currentTopic: Number(control.currentTopic || 0),
     timerStatus: control.timerStatus || "ready",
     timerStartedAt: control.timerStartedAt || "",
+    timerStartedAtMs: Number(control.timerStartedAtMs || 0),
     timerDuration: TIMER_DURATION,
     updatedAt: new Date().toISOString()
   });
@@ -964,11 +991,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   setTopicUI(0);
   renderTimer();
 
+  onValue(serverOffsetRef, (snapshot) => {
+    serverTimeOffset = Number(snapshot.val() || 0);
+    renderTimer();
+    if (control.timerStatus === "running" && calculateRemainingTime() > 0) {
+      startTimerRefresh();
+    }
+  });
+
   onValue(controlRef, (snapshot) => {
     const data = snapshot.val();
 
     if (!data) {
-      control = { currentTopic: 0, timerStatus: "ready", timerStartedAt: "" };
+      control = { currentTopic: 0, timerStatus: "ready", timerStartedAt: "", timerStartedAtMs: 0 };
       ensureControlExists();
       return;
     }
@@ -976,7 +1011,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     control = {
       currentTopic: Number(data.currentTopic || 0),
       timerStatus: data.timerStatus || "ready",
-      timerStartedAt: data.timerStartedAt || ""
+      timerStartedAt: data.timerStartedAt || "",
+      timerStartedAtMs: Number(data.timerStartedAtMs || 0)
     };
 
     setTopicUI(control.currentTopic);
