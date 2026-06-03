@@ -1,0 +1,1101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Talent Uplift Bootcamp 2026 - Team Leader Challenge</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --navy: #0e2238;
+      --navy2: #17324f;
+      --orange: #e7833f;
+      --orange2: #d97531;
+      --mist: #f4f6f8;
+      --line: #e4eaf0;
+      --text: #163047;
+      --muted: #6b7f91;
+      --danger: #b4412b;
+      --success: #16845b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--mist);
+    }
+
+    .display {
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    .soft-shadow {
+      box-shadow: 0 16px 40px rgba(20, 40, 70, .08);
+    }
+
+    .timer-ended {
+      color: #f0a18b !important;
+    }
+
+    .topic-btn.active {
+      background: var(--navy);
+      color: white;
+      border-color: var(--navy);
+    }
+
+    .topic-btn.active .dot {
+      background: var(--orange);
+    }
+
+    .cloud-word {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      line-height: 1;
+      white-space: nowrap;
+      font-weight: 800;
+      transition: all .25s ease;
+      animation: fadeIn .35s ease both;
+    }
+
+    .fade-in { animation: fadeIn .35s ease both; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .scroll-table {
+      overflow: auto;
+      max-height: 420px;
+    }
+
+    @media(max-width: 900px) {
+      .layout {
+        display: flex !important;
+        flex-direction: column !important;
+      }
+
+      #timerCard { order: 1; }
+      #topicCard { order: 2; }
+      #entryCard { order: 3; }
+      #cloudCard { order: 4; }
+      #facilitatorSection { order: 5; }
+
+      .mobile-first {
+        display: contents !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="min-h-screen">
+    <header class="text-white" style="background:linear-gradient(135deg,#0e2238 0%,#17324f 100%);">
+      <div class="max-w-7xl mx-auto px-5 md:px-10 py-8 md:py-10">
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+          <div>
+            <div class="text-[12px] tracking-[0.22em] uppercase text-[#f3b183] font-semibold mb-3">
+              Talent Uplift Bootcamp 2026
+            </div>
+            <h1 class="display text-4xl md:text-6xl leading-tight font-bold">
+              Team Leader Challenge
+            </h1>
+            <p class="text-[#d7e1ea] mt-3 max-w-3xl">
+              Business Case Team Formation through quick thinking, business awareness, and leadership signal scoring.
+            </p>
+          </div>
+          <div class="rounded-2xl border border-white/20 bg-white/5 px-5 py-4">
+            <div class="text-sm text-[#9fb3c7]">Live Mode</div>
+            <div class="font-bold">Firebase Realtime Sync</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-8 flex flex-col gap-6">
+      <section class="bg-white rounded-2xl border border-[#e4eaf0] soft-shadow p-4 md:p-5">
+        <div class="flex gap-3 items-start">
+          <div class="w-10 h-10 rounded-xl bg-[#fff1e7] text-[#d97531] flex items-center justify-center shrink-0 font-bold">★</div>
+          <p class="text-[#526478] leading-relaxed">
+            Participants have <strong>30 seconds per topic</strong>. Enter keywords separated by commas.
+            English, Vietnamese, or mixed language are accepted. Responses, timer, word cloud, and ranking sync in realtime across devices.
+          </p>
+        </div>
+      </section>
+
+      <div class="layout grid grid-cols-[1.1fr_.9fr] gap-6">
+        <div class="mobile-first space-y-6">
+          <section id="topicCard" class="bg-white rounded-3xl border border-[#e4eaf0] soft-shadow p-5 md:p-6">
+            <div class="flex items-start justify-between gap-4 mb-5">
+              <div>
+                <p class="text-[11px] tracking-[0.22em] uppercase text-[#e7833f] font-bold mb-1">
+                  Current Topic selected by facilitator
+                </p>
+                <h2 class="text-[#0e2238] font-bold text-2xl">Live Business Topic</h2>
+              </div>
+              <div class="inline-flex items-center gap-2 rounded-full bg-[#eef3f7] text-[#17324f] px-3 py-1.5 text-xs font-semibold">
+                <span class="w-2 h-2 rounded-full bg-[#e7833f]"></span>
+                <span id="topicLabelPill">Topic 1</span>
+              </div>
+            </div>
+
+            <div class="rounded-2xl border border-[#e8edf2] bg-[#fbfcfd] p-4 md:p-5">
+              <div id="activeTopicLabel" class="text-[11px] tracking-[0.18em] uppercase text-[#d97531] font-bold mb-2">Topic 1</div>
+              <h3 id="activeTopicTitle" class="text-[#0e2238] font-bold text-xl mb-3"></h3>
+              <p id="promptEn" class="text-[#35495d] leading-relaxed mb-3"></p>
+              <p id="promptVi" class="text-[#6a7b8b] leading-relaxed italic"></p>
+            </div>
+          </section>
+
+          <section id="entryCard" class="bg-white rounded-3xl border border-[#e4eaf0] soft-shadow p-5 md:p-6">
+            <div class="flex items-start justify-between gap-4 mb-5">
+              <div>
+                <p class="text-[11px] tracking-[0.22em] uppercase text-[#e7833f] font-bold mb-1">
+                  Participant Entry
+                </p>
+                <h2 class="text-[#0e2238] font-bold text-2xl">Submit Your Keywords</h2>
+              </div>
+              <div class="w-10 h-10 rounded-xl bg-[#eef3f7] text-[#17324f] flex items-center justify-center font-bold">✎</div>
+            </div>
+
+            <form id="keywordForm" class="space-y-4">
+              <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-[#31475c] mb-2" for="fullName">Full Name</label>
+                  <input id="fullName" class="w-full rounded-xl border border-[#dce5ec] px-4 py-3 text-sm focus:outline-none focus:border-[#e7833f]" type="text" required />
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-[#31475c] mb-2" for="department">Department</label>
+                  <input id="department" class="w-full rounded-xl border border-[#dce5ec] px-4 py-3 text-sm focus:outline-none focus:border-[#e7833f]" type="text" required />
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-[#31475c] mb-2" for="keywords">Keywords</label>
+                <textarea id="keywords" rows="4" class="w-full rounded-2xl border border-[#dce5ec] px-4 py-3 text-sm focus:outline-none focus:border-[#e7833f] resize-none disabled:bg-[#f2f4f6] disabled:text-[#8b9aaa]" required></textarea>
+                <p class="text-xs text-[#7c8d9c] mt-2 leading-relaxed">
+                  Enter keywords separated by commas. Example: productivity, đào tạo, data, rủi ro, customer value.
+                </p>
+                <p id="submitError" class="hidden text-sm text-[#b4412b] font-semibold mt-3"></p>
+              </div>
+
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-1">
+                <button id="submitButton" class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 bg-[#e7833f] text-white font-semibold hover:bg-[#d97531] transition disabled:opacity-50 disabled:cursor-not-allowed" type="submit">
+                  Submit Response
+                </button>
+                <p id="successMessage" class="hidden text-sm font-semibold text-[#16845b]">Your response has been submitted.</p>
+              </div>
+            </form>
+          </section>
+        </div>
+
+        <div class="mobile-first space-y-6">
+          <section id="timerCard" class="rounded-3xl text-white p-5 md:p-6 soft-shadow" style="background:linear-gradient(135deg,#10253c 0%,#17324f 100%);">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <p class="text-[11px] tracking-[0.22em] uppercase text-[#f3b183] font-bold mb-1">Challenge Clock</p>
+                <h2 class="text-white font-bold text-2xl">30-Second Timer</h2>
+              </div>
+              <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">⏱</div>
+            </div>
+            <div id="timerDisplay" class="display text-7xl md:text-8xl leading-none mt-5 tracking-tight text-white">30</div>
+            <div id="timerStatus" class="text-[#bfd0df] mt-3 min-h-[22px]">Waiting for facilitator to start.</div>
+          </section>
+
+          <section id="cloudCard" class="bg-white rounded-3xl border border-[#e4eaf0] soft-shadow p-5 md:p-6 min-h-[480px]">
+            <div class="flex items-start justify-between gap-4 mb-4">
+              <div>
+                <p class="text-[11px] tracking-[0.22em] uppercase text-[#e7833f] font-bold mb-1">Live View</p>
+                <h2 class="text-[#0e2238] font-bold text-2xl">Word Cloud</h2>
+                <p class="text-[#7a8c9b] mt-1">Shows submitted keywords for the current topic.</p>
+              </div>
+              <div class="w-10 h-10 rounded-xl bg-[#eef3f7] text-[#17324f] flex items-center justify-center font-bold">☁</div>
+            </div>
+            <div id="cloudArea" class="relative rounded-2xl bg-[#f7f9fb] border border-[#e8edf2] h-[380px] overflow-hidden">
+              <div id="cloudEmpty" class="absolute inset-0 flex items-center justify-center text-center px-8 text-[#90a0ae]">
+                No keywords submitted yet for this topic.
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <section id="facilitatorSection" class="mt-0">
+        <button id="facilitatorToggle" class="w-full flex items-center justify-between rounded-2xl bg-white border border-[#e4eaf0] soft-shadow px-5 py-4 text-left font-semibold text-[#17324f]" type="button">
+          <span class="flex items-center gap-3"><span class="text-[#e7833f]">🔐</span><span>Facilitator Only</span></span>
+          <span id="facilitatorChevron" class="transition-transform">⌄</span>
+        </button>
+
+        <div id="facilitatorPanel" class="hidden bg-white border-x border-b border-[#e4eaf0] rounded-b-3xl p-5 md:p-6">
+          <div id="lockedView" class="max-w-md">
+            <label class="block text-sm font-semibold text-[#31475c] mb-2" for="facilitatorPassword">Password</label>
+            <div class="flex gap-2">
+              <input id="facilitatorPassword" type="password" class="flex-1 rounded-xl border border-[#dce5ec] px-4 py-3 text-sm focus:outline-none focus:border-[#e7833f]" />
+              <button id="unlockBtn" class="rounded-xl bg-[#17324f] text-white px-4 py-3 font-semibold" type="button">Unlock</button>
+            </div>
+            <p id="passwordError" class="hidden text-sm text-[#b4412b] mt-2">Incorrect password.</p>
+          </div>
+
+          <div id="unlockedView" class="hidden fade-in">
+            <section class="rounded-3xl border border-[#e6ecf1] bg-[#fbfcfd] p-5 mb-6">
+              <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-5">
+                <div>
+                  <p class="text-[11px] tracking-[0.22em] uppercase text-[#e7833f] font-bold mb-1">Facilitator Controls</p>
+                  <h2 class="text-[#0e2238] font-bold text-2xl">Run the Challenge</h2>
+                </div>
+
+                <div class="grid sm:grid-cols-2 gap-3 min-w-[280px]">
+                  <div class="rounded-2xl bg-white border border-[#e6ecf1] px-4 py-3">
+                    <div class="text-[11px] uppercase tracking-[0.16em] text-[#d97531] font-bold mb-1">Active Topic</div>
+                    <div id="facilitatorActiveTopic" class="font-bold text-[#17324f]"></div>
+                  </div>
+                  <div class="rounded-2xl bg-white border border-[#e6ecf1] px-4 py-3">
+                    <div class="text-[11px] uppercase tracking-[0.16em] text-[#d97531] font-bold mb-1">Timer Status</div>
+                    <div id="facilitatorStatusText" class="font-bold text-[#17324f]">Ready</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-4">
+                <button data-topic="0" class="topic-btn active text-left border border-[#dce4eb] rounded-2xl p-3 transition" type="button">
+                  <div class="flex items-center gap-2"><span class="dot w-2.5 h-2.5 rounded-full bg-[#d9e1e8]"></span><span class="text-xs font-semibold opacity-70">01</span></div>
+                  <div class="mt-2 font-semibold text-sm">AI & Future Work</div>
+                </button>
+                <button data-topic="1" class="topic-btn text-left border border-[#dce4eb] rounded-2xl p-3 transition" type="button">
+                  <div class="flex items-center gap-2"><span class="dot w-2.5 h-2.5 rounded-full bg-[#d9e1e8]"></span><span class="text-xs font-semibold opacity-70">02</span></div>
+                  <div class="mt-2 font-semibold text-sm">Cost & Business Efficiency</div>
+                </button>
+                <button data-topic="2" class="topic-btn text-left border border-[#dce4eb] rounded-2xl p-3 transition" type="button">
+                  <div class="flex items-center gap-2"><span class="dot w-2.5 h-2.5 rounded-full bg-[#d9e1e8]"></span><span class="text-xs font-semibold opacity-70">03</span></div>
+                  <div class="mt-2 font-semibold text-sm">Customer Value</div>
+                </button>
+                <button data-topic="3" class="topic-btn text-left border border-[#dce4eb] rounded-2xl p-3 transition" type="button">
+                  <div class="flex items-center gap-2"><span class="dot w-2.5 h-2.5 rounded-full bg-[#d9e1e8]"></span><span class="text-xs font-semibold opacity-70">04</span></div>
+                  <div class="mt-2 font-semibold text-sm">Team Performance Under Pressure</div>
+                </button>
+              </div>
+
+              <div class="grid sm:grid-cols-4 gap-3">
+                <button id="startTimer" class="rounded-xl bg-[#e7833f] hover:bg-[#d97531] px-4 py-3 text-sm font-semibold text-white transition" type="button">Start Timer</button>
+                <button id="resetTimer" class="rounded-xl bg-[#edf2f6] hover:bg-[#e4ebf1] px-4 py-3 text-sm font-semibold text-[#17324f] transition" type="button">Reset Timer</button>
+                <button id="nextTopic" class="rounded-xl bg-[#17324f] hover:bg-[#10253c] px-4 py-3 text-sm font-semibold text-white transition" type="button">Next Topic</button>
+                <button id="resetAnswers" class="rounded-xl bg-[#fce8e5] hover:bg-[#f8d4cf] text-[#c84a2f] px-4 py-3 text-sm font-semibold border border-[#f0b5a8] transition" type="button">Reset Answers</button>
+              </div>
+            </section>
+
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
+              <div>
+                <p class="text-[11px] tracking-[0.22em] uppercase text-[#e7833f] font-bold mb-1">Results</p>
+                <h2 class="text-[#0e2238] font-bold text-2xl">Facilitator Dashboard</h2>
+              </div>
+
+              <div class="flex flex-wrap gap-2">
+                <button id="downloadResponses" class="rounded-xl bg-[#17324f] text-white px-3 py-2 text-sm font-semibold" type="button">Download Full Responses</button>
+                <button id="downloadSummary" class="rounded-xl bg-[#edf2f6] text-[#17324f] px-3 py-2 text-sm font-semibold" type="button">Download Scored Summary</button>
+                <button id="copyAiPackage" class="rounded-xl bg-[#fff1e7] text-[#b65f27] px-3 py-2 text-sm font-semibold" type="button">Copy AI Analysis Package</button>
+              </div>
+            </div>
+
+            <p id="copyStatus" class="hidden text-sm text-[#16845b] mb-4"></p>
+
+            <div class="grid lg:grid-cols-[1fr_.85fr] gap-5 mb-6">
+              <div>
+                <h3 class="font-bold text-[#17324f] mb-3">Submissions by Topic</h3>
+                <div class="grid sm:grid-cols-2 gap-3">
+                  <div class="rounded-2xl border border-[#e6ecf1] p-4 bg-[#fbfcfd]"><div class="text-xs text-[#718495] mb-1">Topic 1</div><div id="topicTotal1" class="text-2xl font-bold text-[#17324f]">0</div></div>
+                  <div class="rounded-2xl border border-[#e6ecf1] p-4 bg-[#fbfcfd]"><div class="text-xs text-[#718495] mb-1">Topic 2</div><div id="topicTotal2" class="text-2xl font-bold text-[#17324f]">0</div></div>
+                  <div class="rounded-2xl border border-[#e6ecf1] p-4 bg-[#fbfcfd]"><div class="text-xs text-[#718495] mb-1">Topic 3</div><div id="topicTotal3" class="text-2xl font-bold text-[#17324f]">0</div></div>
+                  <div class="rounded-2xl border border-[#e6ecf1] p-4 bg-[#fbfcfd]"><div class="text-xs text-[#718495] mb-1">Topic 4</div><div id="topicTotal4" class="text-2xl font-bold text-[#17324f]">0</div></div>
+                </div>
+              </div>
+
+              <div class="rounded-2xl border border-[#e6ecf1] bg-[#fbfcfd] p-4">
+                <h3 class="font-bold text-[#17324f] mb-3">Scoring Guide</h3>
+                <div class="space-y-2 text-sm">
+                  <div class="rounded-xl bg-[#edf8f3] text-[#1a6a4f] px-3 py-2">22–25: Strong Team Leader Candidate</div>
+                  <div class="rounded-xl bg-[#f0f6fb] text-[#2b5f86] px-3 py-2">18–21: Potential Team Leader Candidate</div>
+                  <div class="rounded-xl bg-[#fff7ec] text-[#9b632a] px-3 py-2">15–17: Needs facilitator review</div>
+                  <div class="rounded-xl bg-[#fbefef] text-[#a34b4b] px-3 py-2">Below 15: Not prioritized</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-6">
+              <div>
+                <h3 class="font-bold text-[#17324f] mb-3">Keyword-Based Scored Summary</h3>
+                <div class="scroll-table rounded-2xl border border-[#e6ecf1]">
+                  <table class="min-w-[1380px] w-full text-sm">
+                    <thead class="bg-[#f5f7f9] text-[#536678]">
+                      <tr>
+                        <th class="text-left px-3 py-3 font-semibold">Rank</th>
+                        <th class="text-left px-3 py-3 font-semibold">Name</th>
+                        <th class="text-left px-3 py-3 font-semibold">Dept</th>
+                        <th class="text-left px-3 py-3 font-semibold">Valid</th>
+                        <th class="text-left px-3 py-3 font-semibold">Matched</th>
+                        <th class="text-left px-3 py-3 font-semibold">Quantity</th>
+                        <th class="text-left px-3 py-3 font-semibold">Relevance</th>
+                        <th class="text-left px-3 py-3 font-semibold">Breadth</th>
+                        <th class="text-left px-3 py-3 font-semibold">Business</th>
+                        <th class="text-left px-3 py-3 font-semibold">Leadership</th>
+                        <th class="text-left px-3 py-3 font-semibold">Total /25</th>
+                        <th class="text-left px-3 py-3 font-semibold">Recommendation</th>
+                        <th class="text-left px-3 py-3 font-semibold">Signals</th>
+                        <th class="text-left px-3 py-3 font-semibold">Unmatched</th>
+                      </tr>
+                    </thead>
+                    <tbody id="scoreBody" class="divide-y divide-[#edf1f4]"></tbody>
+                  </table>
+                </div>
+                <p class="text-xs text-[#7a8c9b] mt-3">
+                  Ranking is based on rule-based keyword signal scoring. Final Team Leader Candidate selection should also consider facilitator observation and leader pitch.
+                </p>
+              </div>
+
+              <div>
+                <h3 class="font-bold text-[#17324f] mb-3">Full Responses</h3>
+                <div class="scroll-table rounded-2xl border border-[#e6ecf1]">
+                  <table class="min-w-[1100px] w-full text-sm">
+                    <thead class="bg-[#f5f7f9] text-[#536678]">
+                      <tr>
+                        <th class="text-left px-3 py-3 font-semibold">Full Name</th>
+                        <th class="text-left px-3 py-3 font-semibold">Department</th>
+                        <th class="text-left px-3 py-3 font-semibold">Topic</th>
+                        <th class="text-left px-3 py-3 font-semibold">Raw Response</th>
+                        <th class="text-left px-3 py-3 font-semibold">Cleaned Keywords</th>
+                        <th class="text-left px-3 py-3 font-semibold">Keyword Count</th>
+                        <th class="text-left px-3 py-3 font-semibold">Timestamp</th>
+                      </tr>
+                    </thead>
+                    <tbody id="responsesBody" class="divide-y divide-[#edf1f4]"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+import { getDatabase, ref, onValue, push, set, update, remove } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAGtdqky4nCXz7olE11zWNMuDGfB5C2xpo",
+  authDomain: "talent-uplift-bootcamp-2026.firebaseapp.com",
+  databaseURL: "https://talent-uplift-bootcamp-2026-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "talent-uplift-bootcamp-2026",
+  storageBucket: "talent-uplift-bootcamp-2026.firebasestorage.app",
+  messagingSenderId: "1007498558517",
+  appId: "1:1007498558517:web:1be2b3c9ed7cf230bd857c",
+  measurementId: "G-P0KJG9V5BH"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const SESSION_ID = "talent-uplift-bootcamp-2026-live";
+const controlRef = ref(db, `sessions/${SESSION_ID}/control`);
+const submissionsRef = ref(db, `sessions/${SESSION_ID}/submissions`);
+
+const TIMER_DURATION = 30;
+
+const topics = [
+  {
+    title: "AI & Future Work",
+    label: "Topic 1",
+    en: "AI is being introduced into daily work. If you were leading a team through this change, what keywords would you consider?",
+    vi: "AI đang được đưa vào công việc hằng ngày. Nếu bạn là người dẫn dắt team thích nghi với thay đổi này, bạn sẽ nghĩ đến những keyword nào?",
+  },
+  {
+    title: "Cost & Business Efficiency",
+    label: "Topic 2",
+    en: "Business costs are increasing. If you were leading a team to respond, what keywords would you consider?",
+    vi: "Chi phí kinh doanh đang tăng. Nếu bạn là người dẫn dắt team để ứng phó với tình huống này, bạn sẽ nghĩ đến những keyword nào?",
+  },
+  {
+    title: "Customer Value",
+    label: "Topic 3",
+    en: "Customer expectations are changing. If you were leading a team to improve customer value, what keywords would you consider?",
+    vi: "Kỳ vọng của khách hàng đang thay đổi. Nếu bạn là người dẫn dắt team để cải thiện giá trị mang lại cho khách hàng, bạn sẽ nghĩ đến những keyword nào?",
+  },
+  {
+    title: "Team Performance Under Pressure",
+    label: "Topic 4",
+    en: "Your team is under pressure to deliver results in a short time. If you were leading the team, what keywords would you consider?",
+    vi: "Team của bạn đang chịu áp lực phải tạo ra kết quả trong thời gian ngắn. Nếu bạn là người dẫn dắt team, bạn sẽ nghĩ đến những keyword nào?",
+  }
+];
+
+const MASTER = [
+  kw("ai", ["ai", "artificial intelligence", "trí tuệ nhân tạo"], ["technology", "business"], 3),
+  kw("automation", ["automation", "tự động hóa"], ["technology", "business", "efficiency"], 3),
+  kw("productivity", ["productivity", "năng suất"], ["business", "efficiency"], 3),
+  kw("data", ["data", "dữ liệu"], ["technology", "breadth"], 2),
+  kw("data accuracy", ["data accuracy", "độ chính xác dữ liệu", "accuracy", "độ chính xác"], ["technology", "quality", "business"], 3),
+  kw("training", ["training", "đào tạo"], ["people", "leadership"], 2),
+  kw("upskilling", ["upskilling", "nâng cấp kỹ năng", "kỹ năng mới", "new skills"], ["people", "leadership"], 3),
+  kw("reskilling", ["reskilling", "đào tạo lại"], ["people", "leadership"], 3),
+  kw("adoption", ["adoption", "áp dụng", "ứng dụng"], ["technology", "action"], 2),
+  kw("resistance", ["resistance", "kháng cự", "chống đối"], ["people", "risk", "leadership"], 3),
+  kw("change management", ["change management", "quản lý thay đổi", "thay đổi"], ["leadership", "people", "action"], 3),
+  kw("privacy", ["privacy", "data privacy", "bảo mật", "bảo mật dữ liệu"], ["risk", "technology"], 3),
+  kw("human judgment", ["human judgment", "phán đoán con người", "con người quyết định"], ["leadership", "risk"], 3),
+  kw("business value", ["business value", "giá trị kinh doanh"], ["business", "value"], 3),
+  kw("innovation", ["innovation", "đổi mới", "sáng tạo"], ["business", "technology"], 2),
+  kw("cost", ["cost", "chi phí"], ["business", "cost"], 2),
+  kw("cost control", ["cost control", "kiểm soát chi phí"], ["business", "cost", "action"], 3),
+  kw("saving", ["saving", "tiết kiệm"], ["business", "cost"], 2),
+  kw("efficiency", ["efficiency", "hiệu quả"], ["business", "efficiency"], 3),
+  kw("waste", ["waste", "lãng phí"], ["business", "process"], 2),
+  kw("process improvement", ["process improvement", "cải tiến quy trình"], ["business", "process", "action"], 3),
+  kw("lean", ["lean", "tinh gọn"], ["business", "process"], 3),
+  kw("supplier", ["supplier", "nhà cung cấp"], ["breadth", "supplier"], 2),
+  kw("negotiation", ["negotiation", "thương lượng", "đàm phán"], ["business", "leadership"], 3),
+  kw("quality", ["quality", "chất lượng"], ["business", "quality"], 3),
+  kw("customer value", ["customer value", "giá trị khách hàng"], ["customer", "business", "value"], 4),
+  kw("priority", ["priority", "ưu tiên"], ["business", "leadership", "decision"], 3),
+  kw("tradeoff", ["trade-off", "tradeoff", "đánh đổi"], ["business", "risk", "decision"], 4),
+  kw("margin", ["margin", "biên lợi nhuận", "lợi nhuận"], ["business", "cost"], 3),
+  kw("action plan", ["action plan", "kế hoạch hành động"], ["action", "leadership"], 3),
+  kw("customer", ["customer", "khách hàng"], ["customer", "business"], 2),
+  kw("speed", ["speed", "tốc độ"], ["customer", "business"], 2),
+  kw("delivery", ["delivery", "giao hàng"], ["customer", "business"], 2),
+  kw("service", ["service", "dịch vụ"], ["customer"], 2),
+  kw("trust", ["trust", "niềm tin"], ["customer", "leadership"], 3),
+  kw("communication", ["communication", "giao tiếp", "truyền thông", "trao đổi"], ["leadership", "customer"], 3),
+  kw("feedback", ["feedback", "phản hồi"], ["customer", "action"], 2),
+  kw("complaint", ["complaint", "khiếu nại"], ["customer", "risk"], 2),
+  kw("reliability", ["reliability", "độ tin cậy", "đáng tin cậy"], ["customer", "quality"], 3),
+  kw("flexibility", ["flexibility", "linh hoạt"], ["business", "customer"], 2),
+  kw("transparency", ["transparency", "minh bạch"], ["customer", "leadership"], 3),
+  kw("response time", ["response time", "thời gian phản hồi"], ["customer", "action"], 2),
+  kw("customer experience", ["customer experience", "trải nghiệm khách hàng"], ["customer", "business"], 4),
+  kw("pressure", ["pressure", "áp lực"], ["people", "risk"], 2),
+  kw("deadline", ["deadline", "hạn chót"], ["action", "risk"], 2),
+  kw("workload", ["workload", "khối lượng công việc"], ["people", "risk"], 2),
+  kw("teamwork", ["teamwork", "làm việc nhóm", "phối hợp"], ["leadership", "people"], 3),
+  kw("support", ["support", "hỗ trợ"], ["leadership", "people"], 3),
+  kw("motivation", ["motivation", "động lực"], ["leadership", "people"], 3),
+  kw("ownership", ["ownership", "tinh thần làm chủ", "làm chủ"], ["leadership", "action"], 4),
+  kw("accountability", ["accountability", "trách nhiệm"], ["leadership", "action"], 4),
+  kw("planning", ["planning", "lập kế hoạch", "kế hoạch"], ["action", "leadership"], 3),
+  kw("time management", ["time management", "quản lý thời gian"], ["leadership", "action"], 3),
+  kw("problem solving", ["problem solving", "giải quyết vấn đề"], ["business", "leadership", "action"], 4),
+  kw("focus", ["focus", "tập trung"], ["leadership", "action"], 2),
+  kw("progress tracking", ["progress tracking", "theo dõi tiến độ", "tracking"], ["action", "leadership"], 3),
+  kw("quick win", ["quick win", "kết quả nhanh", "thắng lợi nhanh"], ["action", "business"], 3),
+  kw("alignment", ["alignment", "đồng thuận", "thống nhất", "căn chỉnh"], ["leadership", "stakeholder"], 4),
+  kw("decision making", ["decision making", "ra quyết định", "quyết định"], ["leadership", "business"], 4),
+  kw("stakeholder", ["stakeholder", "bên liên quan"], ["leadership", "breadth"], 3),
+  kw("coaching", ["coaching", "huấn luyện", "kèm cặp"], ["leadership", "people"], 3)
+];
+
+const offensive = ["fuck", "shit", "bitch", "asshole", "địt", "đụ", "lồn", "cặc"];
+const q = (sel) => document.querySelector(sel);
+const qa = (sel) => Array.from(document.querySelectorAll(sel));
+
+let control = {
+  currentTopic: 0,
+  timerStatus: "ready",
+  timerStartedAt: ""
+};
+let submissions = [];
+let timerRefreshInterval = null;
+
+function kw(normalized, synonyms, categories, weight) {
+  return { normalized, synonyms, categories, weight };
+}
+
+function normalizeText(value) {
+  return String(value || "")
+    .trim()
+    .toLocaleLowerCase("vi-VN")
+    .normalize("NFC")
+    .replace(/\s+/g, " ");
+}
+
+function cleanKeywords(raw) {
+  const seen = new Set();
+  return String(raw || "")
+    .split(",")
+    .map(k => k.trim().replace(/\s+/g, " "))
+    .filter(Boolean)
+    .filter(k => {
+      const norm = normalizeText(k);
+      if (offensive.some(bad => norm.includes(bad))) return false;
+      if (seen.has(norm)) return false;
+      seen.add(norm);
+      return true;
+    });
+}
+
+function matchKeyword(input) {
+  const norm = normalizeText(input);
+  for (const item of MASTER) {
+    for (const syn of item.synonyms) {
+      const s = normalizeText(syn);
+      if (norm === s) return item;
+      if (norm.length >= 4 && s.length >= 4 && (norm.includes(s) || s.includes(norm))) return item;
+    }
+  }
+  return null;
+}
+
+function setTopicUI(index) {
+  qa(".topic-btn").forEach((btn, i) => btn.classList.toggle("active", i === index));
+  q("#topicLabelPill").textContent = topics[index].label;
+  q("#activeTopicLabel").textContent = topics[index].label;
+  q("#activeTopicTitle").textContent = topics[index].title;
+  q("#promptEn").textContent = topics[index].en;
+  q("#promptVi").textContent = topics[index].vi;
+  q("#facilitatorActiveTopic").textContent = `${topics[index].label} · ${topics[index].title}`;
+}
+
+function calculateRemainingTime() {
+  if (control.timerStatus === "ready") return TIMER_DURATION;
+  if (control.timerStatus === "ended") return 0;
+  if (control.timerStatus === "running") {
+    const start = Date.parse(control.timerStartedAt || "");
+    if (!start || Number.isNaN(start)) return TIMER_DURATION;
+    const elapsed = Math.floor((Date.now() - start) / 1000);
+    return Math.max(0, TIMER_DURATION - elapsed);
+  }
+  return TIMER_DURATION;
+}
+
+function isTimerOpenForSubmission() {
+  return control.timerStatus === "running" && calculateRemainingTime() > 0;
+}
+
+function setParticipantEntryEnabled(enabled) {
+  q("#keywords").disabled = !enabled;
+  q("#submitButton").disabled = !enabled;
+}
+
+function renderTimer() {
+  const remaining = calculateRemainingTime();
+  q("#timerDisplay").textContent = String(remaining).padStart(2, "0");
+  q("#timerDisplay").classList.toggle("timer-ended", remaining === 0);
+
+  if (control.timerStatus === "ready") {
+    q("#timerStatus").textContent = "Waiting for facilitator to start.";
+    q("#timerStatus").classList.remove("timer-ended");
+    q("#facilitatorStatusText").textContent = "Ready";
+    setParticipantEntryEnabled(false);
+  } else if (control.timerStatus === "running" && remaining > 0) {
+    q("#timerStatus").textContent = "30 seconds to think, respond, and lead.";
+    q("#timerStatus").classList.remove("timer-ended");
+    q("#facilitatorStatusText").textContent = "Timer running";
+    setParticipantEntryEnabled(true);
+  } else {
+    q("#timerDisplay").textContent = "00";
+    q("#timerStatus").textContent = "Time’s up. Please stop typing. / Hết giờ. Vui lòng dừng nhập.";
+    q("#timerStatus").classList.add("timer-ended");
+    q("#facilitatorStatusText").textContent = "Time’s up";
+    setParticipantEntryEnabled(false);
+    stopTimerRefresh();
+  }
+}
+
+function startTimerRefresh() {
+  stopTimerRefresh();
+  timerRefreshInterval = setInterval(() => {
+    renderTimer();
+    if (control.timerStatus !== "running" || calculateRemainingTime() <= 0) {
+      stopTimerRefresh();
+      renderTimer();
+    }
+  }, 250);
+}
+
+function stopTimerRefresh() {
+  if (timerRefreshInterval) {
+    clearInterval(timerRefreshInterval);
+    timerRefreshInterval = null;
+  }
+}
+
+async function setTopic(index) {
+  await update(controlRef, {
+    currentTopic: index,
+    timerStatus: "ready",
+    timerStartedAt: "",
+    updatedAt: new Date().toISOString()
+  });
+  q("#keywords").value = "";
+}
+
+async function startTimer() {
+  await update(controlRef, {
+    timerStatus: "running",
+    timerStartedAt: new Date().toISOString(),
+    timerDuration: TIMER_DURATION,
+    updatedAt: new Date().toISOString()
+  });
+}
+
+async function resetTimer() {
+  await update(controlRef, {
+    timerStatus: "ready",
+    timerStartedAt: "",
+    timerDuration: TIMER_DURATION,
+    updatedAt: new Date().toISOString()
+  });
+}
+
+async function nextTopic() {
+  const next = ((control.currentTopic || 0) + 1) % topics.length;
+  await setTopic(next);
+}
+
+function renderCloud() {
+  const cloud = q("#cloudArea");
+  qa(".cloud-word").forEach(el => el.remove());
+  const empty = q("#cloudEmpty");
+
+  const topicRecords = submissions.filter(r => Number(r.topicId) === Number(control.currentTopic) + 1);
+  const freq = {};
+
+  topicRecords.forEach(r => {
+    (r.cleanedKeywords || []).forEach(k => {
+      const key = normalizeText(k);
+      if (!freq[key]) freq[key] = { text: k, count: 0 };
+      freq[key].count += 1;
+    });
+  });
+
+  const words = Object.values(freq).sort((a, b) => b.count - a.count).slice(0, 32);
+
+  if (!words.length) {
+    empty.classList.remove("hidden");
+    return;
+  }
+
+  empty.classList.add("hidden");
+
+  const spots = [
+    [50,48],[30,35],[68,33],[38,62],[66,65],[18,50],[82,51],[50,22],
+    [51,76],[22,23],[79,24],[18,75],[83,76],[35,18],[66,18],[34,82],
+    [67,84],[11,38],[89,38],[12,63],[88,63],[50,10],[50,90],[25,88],
+    [76,88],[25,12],[77,12],[12,88],[88,12],[41,44],[58,57],[45,70]
+  ];
+
+  const max = words[0].count;
+  const colors = ["#17324f","#244c71","#e7833f","#40617d","#6c879d","#0e2238"];
+
+  words.forEach((word, i) => {
+    const el = document.createElement("span");
+    el.className = "cloud-word";
+    const size = 15 + Math.round((word.count / max) * 26);
+    el.style.left = `${spots[i][0]}%`;
+    el.style.top = `${spots[i][1]}%`;
+    el.style.fontSize = `${size}px`;
+    el.style.color = colors[i % colors.length];
+    el.style.animationDelay = `${i * .02}s`;
+    el.textContent = word.text;
+    cloud.appendChild(el);
+  });
+}
+
+function scoreParticipant(records) {
+  const allKeywords = [];
+  const matched = [];
+  const unmatched = [];
+  const categoryHits = new Set();
+
+  records.forEach(r => {
+    (r.cleanedKeywords || []).forEach(k => {
+      allKeywords.push(k);
+      const match = matchKeyword(k);
+      if (match) {
+        matched.push({ input: k, ...match });
+        match.categories.forEach(c => categoryHits.add(c));
+      } else {
+        unmatched.push(k);
+      }
+    });
+  });
+
+  const validCount = allKeywords.length;
+  const matchedCount = matched.length;
+
+  const quantityScore = Math.min(5, Math.ceil(validCount / 4));
+  const relevanceScore = validCount === 0 ? 0 : Math.min(5, Math.ceil((matchedCount / validCount) * 5));
+
+  const breadthCategories = ["people", "process", "customer", "risk", "data", "quality", "technology", "action", "supplier", "stakeholder"];
+  const breadthScore = Math.min(5, Math.ceil(breadthCategories.filter(c => categoryHits.has(c)).length / 2));
+
+  const businessCategories = ["business", "cost", "efficiency", "productivity", "value", "quality", "margin", "priority", "impact", "roi", "decision"];
+  const businessScore = Math.min(5, Math.ceil(businessCategories.filter(c => categoryHits.has(c)).length / 2));
+
+  const leadershipCategories = ["leadership", "communication", "ownership", "accountability", "alignment", "support", "motivation", "coaching", "teamwork", "decision"];
+  const leadershipScore = Math.min(5, Math.ceil(leadershipCategories.filter(c => categoryHits.has(c)).length / 2));
+
+  const totalScore = quantityScore + relevanceScore + breadthScore + businessScore + leadershipScore;
+
+  let recommendation = "Not Prioritized";
+  if (totalScore >= 22) recommendation = "Strong Team Leader Candidate";
+  else if (totalScore >= 18) recommendation = "Potential Team Leader Candidate";
+  else if (totalScore >= 15) recommendation = "Needs Facilitator Review";
+
+  return {
+    validCount,
+    matchedCount,
+    quantityScore,
+    relevanceScore,
+    breadthScore,
+    businessScore,
+    leadershipScore,
+    totalScore,
+    recommendation,
+    signals: Array.from(categoryHits).sort(),
+    unmatched: Array.from(new Set(unmatched.map(normalizeText))).filter(Boolean).slice(0, 12)
+  };
+}
+
+function getScoredSummary() {
+  const map = new Map();
+
+  submissions.forEach(r => {
+    const key = `${r.fullName}|||${r.department}`;
+    if (!map.has(key)) {
+      map.set(key, { fullName: r.fullName, department: r.department, records: [] });
+    }
+    map.get(key).records.push(r);
+  });
+
+  let list = Array.from(map.values()).map(item => ({
+    ...item,
+    ...scoreParticipant(item.records)
+  }));
+
+  list.sort((a, b) => {
+    if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
+    if (b.matchedCount !== a.matchedCount) return b.matchedCount - a.matchedCount;
+    if (b.validCount !== a.validCount) return b.validCount - a.validCount;
+    return a.fullName.localeCompare(b.fullName);
+  });
+
+  let rank = 1;
+  for (let i = 0; i < list.length; i++) {
+    if (i > 0 && list[i].totalScore < list[i - 1].totalScore) rank = i + 1;
+    list[i].rank = rank;
+  }
+
+  return list;
+}
+
+function renderResults() {
+  for (let i = 1; i <= 4; i++) {
+    q(`#topicTotal${i}`).textContent = submissions.filter(r => Number(r.topicId) === i).length;
+  }
+
+  const responsesBody = q("#responsesBody");
+  responsesBody.innerHTML = "";
+
+  submissions.slice().reverse().forEach(r => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="px-3 py-3 align-top">${escapeHtml(r.fullName)}</td>
+      <td class="px-3 py-3 align-top">${escapeHtml(r.department)}</td>
+      <td class="px-3 py-3 align-top">${escapeHtml(r.topicTitle)}</td>
+      <td class="px-3 py-3 align-top max-w-[240px]">${escapeHtml(r.rawResponse)}</td>
+      <td class="px-3 py-3 align-top max-w-[240px]">${escapeHtml((r.cleanedKeywords || []).join(", "))}</td>
+      <td class="px-3 py-3 align-top">${Number(r.keywordCount || 0)}</td>
+      <td class="px-3 py-3 align-top">${new Date(r.submittedAt).toLocaleString("en-GB")}</td>
+    `;
+    responsesBody.appendChild(tr);
+  });
+
+  const scoreBody = q("#scoreBody");
+  scoreBody.innerHTML = "";
+
+  getScoredSummary().forEach(s => {
+    const tr = document.createElement("tr");
+    if (s.rank === 1) tr.className = "bg-[#fff8f3]";
+    else if (s.rank <= 3) tr.className = "bg-[#f0f6fb]";
+
+    tr.innerHTML = `
+      <td class="px-3 py-3 font-bold text-[#17324f]">${s.rank}</td>
+      <td class="px-3 py-3">${escapeHtml(s.fullName)}</td>
+      <td class="px-3 py-3">${escapeHtml(s.department)}</td>
+      <td class="px-3 py-3">${s.validCount}</td>
+      <td class="px-3 py-3">${s.matchedCount}</td>
+      <td class="px-3 py-3">${s.quantityScore}</td>
+      <td class="px-3 py-3">${s.relevanceScore}</td>
+      <td class="px-3 py-3">${s.breadthScore}</td>
+      <td class="px-3 py-3">${s.businessScore}</td>
+      <td class="px-3 py-3">${s.leadershipScore}</td>
+      <td class="px-3 py-3 font-bold text-[#17324f]">${s.totalScore}</td>
+      <td class="px-3 py-3">${escapeHtml(s.recommendation)}</td>
+      <td class="px-3 py-3 max-w-[260px]">${escapeHtml(s.signals.join(", "))}</td>
+      <td class="px-3 py-3 max-w-[220px]">${escapeHtml(s.unmatched.join(", "))}</td>
+    `;
+    scoreBody.appendChild(tr);
+  });
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, s => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[s]));
+}
+
+function toCSV(rows) {
+  return rows.map(row => row.map(v => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+}
+
+function downloadFile(filename, content) {
+  const blob = new Blob(["\uFEFF" + content], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function downloadResponses() {
+  const rows = [["Full Name","Department","Topic","Raw Response","Cleaned Keywords","Keyword Count","Timestamp"]];
+  submissions.forEach(r => rows.push([
+    r.fullName,
+    r.department,
+    r.topicTitle,
+    r.rawResponse,
+    (r.cleanedKeywords || []).join(", "),
+    r.keywordCount,
+    r.submittedAt
+  ]));
+  downloadFile("talent-uplift-full-responses.csv", toCSV(rows));
+}
+
+function downloadSummary() {
+  const rows = [[
+    "Rank","Full Name","Department","Valid Keyword Count","Matched Keyword Count",
+    "Quantity Score","Relevance Score","Breadth Score","Business Score","Leadership Score",
+    "Total Score","Recommendation","Signals","Unmatched Keywords"
+  ]];
+
+  getScoredSummary().forEach(s => rows.push([
+    s.rank, s.fullName, s.department, s.validCount, s.matchedCount,
+    s.quantityScore, s.relevanceScore, s.breadthScore, s.businessScore, s.leadershipScore,
+    s.totalScore, s.recommendation, s.signals.join(", "), s.unmatched.join(", ")
+  ]));
+
+  downloadFile("talent-uplift-keyword-scored-summary.csv", toCSV(rows));
+}
+
+function buildAiPackage() {
+  const fullRows = submissions.map(r => ({
+    fullName: r.fullName,
+    department: r.department,
+    topic: r.topicTitle,
+    rawResponse: r.rawResponse,
+    cleanedKeywords: r.cleanedKeywords,
+    keywordCount: r.keywordCount,
+    submittedAt: r.submittedAt
+  }));
+
+  const scoreRows = getScoredSummary();
+
+  return `You are analyzing a Keyword Challenge activity for Talent Uplift Bootcamp 2026.
+
+Context:
+This activity is used to identify potential Team Leader Candidates for a Business Case Challenge. Participants had 30 seconds per topic to enter as many relevant keywords as possible. They were allowed to answer in English, Vietnamese, or mixed language.
+
+The web app has already created a rule-based keyword scoring summary using a master keyword list. Please review the quality of the keyword responses and provide a final facilitator recommendation.
+
+Please analyze using:
+1. Valid Keyword Quantity
+2. Topic Relevance
+3. Thinking Breadth
+4. Business Sense
+5. Leadership Lens
+
+Important:
+Do not select candidates only based on keyword quantity. Prioritize balanced business thinking and leadership potential.
+
+Output required:
+A. Final recommended Team Leader Candidates
+B. Score adjustment notes if any
+C. Rationale for each recommended candidate
+D. Caution notes: participants with high quantity but lower quality, or fewer keywords but stronger business thinking
+E. Final group: Strong / Potential / Needs Review
+
+RULE-BASED SCORED SUMMARY:
+${JSON.stringify(scoreRows, null, 2)}
+
+FULL RESPONSE DATA:
+${JSON.stringify(fullRows, null, 2)}
+`;
+}
+
+async function resetAnswers() {
+  const confirmed = confirm("Are you sure you want to delete all participant answers? This action cannot be undone.");
+  if (!confirmed) return;
+
+  await remove(submissionsRef);
+
+  q("#copyStatus").textContent = "All participant answers have been reset.";
+  q("#copyStatus").classList.remove("hidden");
+  setTimeout(() => q("#copyStatus").classList.add("hidden"), 2500);
+}
+
+async function ensureControlExists() {
+  await update(controlRef, {
+    currentTopic: Number(control.currentTopic || 0),
+    timerStatus: control.timerStatus || "ready",
+    timerStartedAt: control.timerStartedAt || "",
+    timerDuration: TIMER_DURATION,
+    updatedAt: new Date().toISOString()
+  });
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  setTopicUI(0);
+  renderTimer();
+
+  onValue(controlRef, (snapshot) => {
+    const data = snapshot.val();
+
+    if (!data) {
+      control = { currentTopic: 0, timerStatus: "ready", timerStartedAt: "" };
+      ensureControlExists();
+      return;
+    }
+
+    control = {
+      currentTopic: Number(data.currentTopic || 0),
+      timerStatus: data.timerStatus || "ready",
+      timerStartedAt: data.timerStartedAt || ""
+    };
+
+    setTopicUI(control.currentTopic);
+    renderTimer();
+
+    if (control.timerStatus === "running" && calculateRemainingTime() > 0) {
+      startTimerRefresh();
+    } else {
+      stopTimerRefresh();
+    }
+
+    renderCloud();
+    renderResults();
+  });
+
+  onValue(submissionsRef, (snapshot) => {
+    const data = snapshot.val() || {};
+    submissions = Object.entries(data).map(([id, value]) => ({ id, ...value }));
+    submissions.sort((a, b) => new Date(a.submittedAt) - new Date(b.submittedAt));
+    renderCloud();
+    renderResults();
+  });
+
+  qa(".topic-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      await setTopic(Number(btn.dataset.topic));
+      q("#keywords").value = "";
+    });
+  });
+
+  q("#startTimer").addEventListener("click", startTimer);
+  q("#resetTimer").addEventListener("click", resetTimer);
+  q("#nextTopic").addEventListener("click", nextTopic);
+
+  q("#keywordForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    q("#submitError").classList.add("hidden");
+
+    if (!isTimerOpenForSubmission()) {
+      q("#submitError").textContent = control.timerStatus === "ready"
+        ? "Please wait for the facilitator to start the timer. / Vui lòng chờ facilitator bắt đầu timer."
+        : "Time’s up. Please wait for the next topic. / Hết giờ. Vui lòng chờ chủ đề tiếp theo.";
+      q("#submitError").classList.remove("hidden");
+      return;
+    }
+
+    const fullName = q("#fullName").value.trim();
+    const department = q("#department").value.trim();
+    const raw = q("#keywords").value.trim();
+    const cleaned = cleanKeywords(raw);
+
+    if (!fullName || !department || !raw || cleaned.length === 0) {
+      q("#submitError").textContent = "Please complete all fields and enter at least one valid keyword.";
+      q("#submitError").classList.remove("hidden");
+      return;
+    }
+
+    q("#submitButton").disabled = true;
+    q("#submitButton").textContent = "Submitting...";
+
+    try {
+      await push(submissionsRef, {
+        fullName,
+        department,
+        topicId: Number(control.currentTopic) + 1,
+        topicTitle: topics[Number(control.currentTopic)].title,
+        rawResponse: raw,
+        cleanedKeywords: cleaned,
+        keywordCount: cleaned.length,
+        submittedAt: new Date().toISOString()
+      });
+
+      q("#keywords").value = "";
+      q("#successMessage").classList.remove("hidden");
+      setTimeout(() => q("#successMessage").classList.add("hidden"), 2500);
+    } catch (error) {
+      q("#submitError").textContent = "Could not save your response. Please check connection and try again.";
+      q("#submitError").classList.remove("hidden");
+      console.error(error);
+    } finally {
+      q("#submitButton").textContent = "Submit Response";
+      renderTimer();
+    }
+  });
+
+  q("#facilitatorToggle").addEventListener("click", () => {
+    q("#facilitatorPanel").classList.toggle("hidden");
+    q("#facilitatorChevron").classList.toggle("rotate-180");
+  });
+
+  q("#unlockBtn").addEventListener("click", () => {
+    if (q("#facilitatorPassword").value === "TUB2026") {
+      q("#lockedView").classList.add("hidden");
+      q("#unlockedView").classList.remove("hidden");
+      q("#passwordError").classList.add("hidden");
+      renderResults();
+    } else {
+      q("#passwordError").classList.remove("hidden");
+    }
+  });
+
+  q("#downloadResponses").addEventListener("click", downloadResponses);
+  q("#downloadSummary").addEventListener("click", downloadSummary);
+  q("#resetAnswers").addEventListener("click", resetAnswers);
+
+  q("#copyAiPackage").addEventListener("click", async () => {
+    const text = buildAiPackage();
+
+    try {
+      await navigator.clipboard.writeText(text);
+      q("#copyStatus").textContent = "AI analysis package copied. Paste it into ChatGPT Plus for final review.";
+    } catch {
+      q("#copyStatus").textContent = "Could not copy automatically. Please export CSV instead.";
+    }
+
+    q("#copyStatus").classList.remove("hidden");
+    setTimeout(() => q("#copyStatus").classList.add("hidden"), 3500);
+  });
+});
+</script>
+</body>
+</html>
