@@ -125,21 +125,62 @@
       max-height: 420px;
     }
 
+    /* Keep timer visually simple: use the large countdown number only. */
+    #timerStatus,
+    #fullscreenTimerStatus {
+      display: none !important;
+    }
+
+    #facilitatorToggle.secret-toggle {
+      min-height: 64px;
+      opacity: 1;
+      background: #ffffff !important;
+      border: 1px solid #e4eaf0 !important;
+      box-shadow: 0 16px 40px rgba(20, 40, 70, .08);
+    }
+
+    #facilitatorToggle.secret-toggle:hover {
+      background: #fbfcfd !important;
+      border-color: #dce5ec !important;
+    }
+
     @media(max-width: 900px) {
       .layout {
         display: flex !important;
         flex-direction: column !important;
       }
 
-      #timerCard { order: 1; }
-      #topicCard { order: 2; }
+      /* Mobile flow: topic → compact timer → keyword entry.
+         This keeps the countdown close to the submission form. */
+      #topicCard { order: 1; }
+      #timerCard {
+        order: 2;
+        position: sticky;
+        top: 8px;
+        z-index: 30;
+        padding: 16px !important;
+        border-radius: 24px !important;
+      }
       #entryCard { order: 3; }
-      #cloudCard { order: 4; }
-      #facilitatorSection { order: 5; }
+
+      /* Hide word cloud on participant mobile view to keep the activity focused. */
+      #cloudCard { display: none !important; }
+
+      #facilitatorSection { order: 4; }
 
       .mobile-first {
         display: contents !important;
       }
+
+      #timerCard h2 {
+        font-size: 1.15rem !important;
+      }
+
+      #timerDisplay {
+        font-size: 4.5rem !important;
+        margin-top: 10px !important;
+      }
+
     }
   </style>
 </head>
@@ -281,9 +322,9 @@
       </div>
 
       <section id="facilitatorSection" class="mt-0">
-        <button id="facilitatorToggle" class="w-full flex items-center justify-between rounded-2xl bg-white border border-[#e4eaf0] soft-shadow px-5 py-4 text-left font-semibold text-[#17324f]" type="button">
-          <span class="flex items-center gap-3"><span class="text-[#e7833f]">🔐</span><span>Facilitator Only</span></span>
-          <span id="facilitatorChevron" class="transition-transform">⌄</span>
+        <button id="facilitatorToggle" class="secret-toggle w-full flex items-center justify-between rounded-2xl bg-white border border-[#e4eaf0] px-5 py-4 text-left font-semibold text-[#17324f]" type="button" aria-label="Facilitator controls">
+          <span aria-hidden="true">&nbsp;</span>
+          <span id="facilitatorChevron" class="hidden transition-transform">⌄</span>
         </button>
 
         <div id="facilitatorPanel" class="hidden bg-white border-x border-b border-[#e4eaf0] rounded-b-3xl p-5 md:p-6">
@@ -801,24 +842,24 @@ function renderTimer() {
   }
 
   if (control.timerStatus === "ready") {
-    q("#timerStatus").textContent = `Ready · ${TIMER_DURATION}s`;
+    q("#timerStatus").textContent = "";
     q("#timerStatus").classList.remove("timer-ended");
     q("#facilitatorStatusText").textContent = "Ready";
-    if (fullscreenStatus) fullscreenStatus.textContent = `Ready · ${TIMER_DURATION}s`;
+    if (fullscreenStatus) fullscreenStatus.textContent = "";
     setParticipantEntryEnabled(false);
   } else if (control.timerStatus === "running" && remaining > 0) {
-    q("#timerStatus").textContent = `Time remaining: ${remaining}s / Còn ${remaining}s`;
+    q("#timerStatus").textContent = "";
     q("#timerStatus").classList.remove("timer-ended");
     q("#facilitatorStatusText").textContent = `${remaining}s remaining`;
-    if (fullscreenStatus) fullscreenStatus.textContent = `${remaining}s remaining`;
+    if (fullscreenStatus) fullscreenStatus.textContent = "";
     setParticipantEntryEnabled(true);
   } else {
     q("#timerDisplay").textContent = "00";
     if (fullscreenTimer) fullscreenTimer.textContent = "00";
-    q("#timerStatus").textContent = "Time’s up. Please stop typing. / Hết giờ. Vui lòng dừng nhập.";
+    q("#timerStatus").textContent = "";
     q("#timerStatus").classList.add("timer-ended");
     q("#facilitatorStatusText").textContent = "Time’s up";
-    if (fullscreenStatus) fullscreenStatus.textContent = "Time’s up";
+    if (fullscreenStatus) fullscreenStatus.textContent = "";
     setParticipantEntryEnabled(false);
     stopTimerRefresh();
   }
